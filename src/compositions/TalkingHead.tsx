@@ -1,5 +1,4 @@
 import React from 'react';
-import { z } from 'zod';
 import {
   AbsoluteFill,
   interpolate,
@@ -7,11 +6,14 @@ import {
   useVideoConfig,
   Img,
 } from 'remotion';
+import { z } from 'zod';
 
 const subtitleEntrySchema = z.object({
   startMs: z.number(),
   endMs: z.number(),
   text: z.string(),
+}).refine((s) => s.endMs > s.startMs, {
+  message: 'endMs must be greater than startMs',
 });
 
 export const talkingHeadSchema = z.object({
@@ -70,8 +72,8 @@ export const TalkingHead: React.FC<TalkingHeadProps> = ({
 
       {/* Logo */}
       {logoUrl && (
-        <div style={{ position: 'absolute', top: 32, right: 32 }}>
-          <Img src={logoUrl} style={{ height: 48, objectFit: 'contain' }} />
+        <div style={{ position: 'absolute', top: 32, right: 32, width: 120, height: 48 }}>
+          <Img src={logoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
         </div>
       )}
 
@@ -79,7 +81,7 @@ export const TalkingHead: React.FC<TalkingHeadProps> = ({
       <div
         style={{
           position: 'absolute',
-          bottom: activeSubtitle ? 120 : 48,
+          bottom: 120,
           left: 0,
           right: 0,
           opacity: lowerThirdOpacity,
@@ -92,24 +94,22 @@ export const TalkingHead: React.FC<TalkingHeadProps> = ({
         </div>
       </div>
 
-      {/* Active subtitle */}
-      {activeSubtitle && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 48,
-            left: 0,
-            right: 0,
-            padding: '10px 24px',
-            backgroundColor: 'rgba(0,0,0,0.65)',
-            textAlign: 'center',
-          }}
-        >
-          <div style={{ fontSize: 32, fontWeight: 600, color: '#ffffff', lineHeight: 1.4 }}>
-            {activeSubtitle.text}
-          </div>
+      {/* Altyazı */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 48,
+          left: 0,
+          right: 0,
+          padding: '10px 24px',
+          backgroundColor: activeSubtitle ? 'rgba(0,0,0,0.65)' : 'transparent',
+          textAlign: 'center',
+        }}
+      >
+        <div style={{ fontSize: 32, fontWeight: 600, color: '#ffffff', lineHeight: 1.4 }}>
+          {activeSubtitle?.text ?? ''}
         </div>
-      )}
+      </div>
     </AbsoluteFill>
   );
 };
