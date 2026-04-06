@@ -5,20 +5,26 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
+import { z } from 'zod';
 
-export interface ProductAdProps {
-  title: string;
-  features: string[];
-  cta: string;
-  accentColor: string;
-  fontFamily: string;
-}
+export const productAdSchema = z.object({
+  title: z.string(),
+  /** Maximum 4 items. Additional items are ignored. */
+  features: z.array(z.string()),
+  cta: z.string(),
+  accentColor: z.string(),
+  backgroundColor: z.string(),
+  fontFamily: z.string(),
+});
+
+export type ProductAdProps = z.infer<typeof productAdSchema>;
 
 export const ProductAd: React.FC<ProductAdProps> = ({
   title,
   features,
   cta,
   accentColor,
+  backgroundColor,
   fontFamily,
 }) => {
   const frame = useCurrentFrame();
@@ -46,7 +52,7 @@ export const ProductAd: React.FC<ProductAdProps> = ({
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: '#1a1a2e',
+        backgroundColor,
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'column',
@@ -54,6 +60,7 @@ export const ProductAd: React.FC<ProductAdProps> = ({
         fontFamily,
       }}
     >
+      {/* HOOK */}
       <div
         style={{
           opacity: titleOpacity,
@@ -67,6 +74,7 @@ export const ProductAd: React.FC<ProductAdProps> = ({
         {title}
       </div>
 
+      {/* FEATURES */}
       {features.slice(0, 4).map((text, i) => {
         const start = fps * (5 + i * 3);
         const featureOpacity = interpolate(frame, [start, start + fps], [0, 1], {
@@ -79,7 +87,7 @@ export const ProductAd: React.FC<ProductAdProps> = ({
         });
         return (
           <div
-            key={text}
+            key={`${i}-${text}`}
             style={{
               opacity: featureOpacity,
               transform: `translateX(${featureX}px)`,
@@ -93,6 +101,7 @@ export const ProductAd: React.FC<ProductAdProps> = ({
         );
       })}
 
+      {/* CTA */}
       <div
         style={{
           opacity: ctaOpacity,

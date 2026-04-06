@@ -1,7 +1,7 @@
 import React from "react";
 import { Composition } from "remotion";
 import { HelloWorld } from "./compositions/HelloWorld";
-import { ProductAd, ProductAdProps } from "./compositions/ProductAd";
+import { productAdSchema, ProductAd, ProductAdProps } from "./compositions/ProductAd";
 // Stats and TalkingHead will be added in Tasks 3 and 4
 // import { Stats, StatsProps } from "./compositions/Stats";
 // import { TalkingHead, TalkingHeadProps } from "./compositions/TalkingHead";
@@ -11,6 +11,7 @@ const productAdDefaults: ProductAdProps = {
   features: ['Single Origin Beans', 'Roasted Fresh Weekly', 'Shipped to Your Door'],
   cta: 'mountainbrew.co',
   accentColor: '#e67e22',
+  backgroundColor: '#1a1a2e',
   fontFamily: 'sans-serif',
 };
 
@@ -35,6 +36,7 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
         defaultProps={productAdDefaults}
+        schema={productAdSchema}
       />
       {/* Stats and TalkingHead compositions will be added in Tasks 3 and 4 */}
     </>
