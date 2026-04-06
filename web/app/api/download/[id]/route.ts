@@ -4,7 +4,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import path from 'path'
 import fs from 'fs'
 
-const OUT_DIR = path.resolve(process.cwd(), process.env.RENDER_OUT_DIR ?? '../out')
+function getOutDir() {
+  return path.resolve(process.cwd(), process.env.RENDER_OUT_DIR ?? '../out')
+}
 
 export async function GET(
   _req: NextRequest,
@@ -17,7 +19,7 @@ export async function GET(
     return NextResponse.json({ error: 'Geçersiz id' }, { status: 400 })
   }
 
-  const filePath = path.join(OUT_DIR, `${id}.mp4`)
+  const filePath = path.join(getOutDir(), `${id}.mp4`)
 
   if (!fs.existsSync(filePath)) {
     return NextResponse.json({ error: 'Dosya bulunamadı' }, { status: 404 })
