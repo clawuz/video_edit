@@ -3,7 +3,7 @@ import { Composition } from "remotion";
 import { HelloWorld } from "./compositions/HelloWorld";
 import { productAdSchema, ProductAd, ProductAdProps } from "./compositions/ProductAd";
 import { statsSchema, Stats, StatsProps } from "./compositions/Stats";
-// import { TalkingHead, TalkingHeadProps } from "./compositions/TalkingHead";
+import { talkingHeadSchema, TalkingHead, TalkingHeadProps } from "./compositions/TalkingHead";
 
 const productAdDefaults: ProductAdProps = {
   title: 'Your morning deserves better',
@@ -27,7 +27,17 @@ const statsDefaults: StatsProps = {
   fontFamily: 'sans-serif',
 };
 
-// talkingHeadDefaults will be added in Task 4
+const talkingHeadDefaults: TalkingHeadProps = {
+  subtitles: [
+    { startMs: 0, endMs: 3000, text: 'Welcome to this video.' },
+    { startMs: 3000, endMs: 6000, text: 'Here is some great content.' },
+  ],
+  lowerThird: 'Your Name — Title',
+  logoUrl: '',
+  accentColor: '#10b981',
+  backgroundColor: '#1a1a2e',
+  fontFamily: 'sans-serif',
+};
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -60,7 +70,16 @@ export const RemotionRoot: React.FC = () => {
         defaultProps={statsDefaults}
         schema={statsSchema}
       />
-      {/* TalkingHead composition will be added in Task 4 */}
+      <Composition
+        id="TalkingHead"
+        component={TalkingHead}
+        durationInFrames={300}
+        fps={30}
+        width={1080}
+        height={1920}
+        defaultProps={talkingHeadDefaults}
+        schema={talkingHeadSchema}
+      />
     </>
   );
 };
