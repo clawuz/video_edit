@@ -6,11 +6,16 @@ import fs from 'fs'
 
 const execAsync = promisify(exec)
 
-const REMOTION_DIR = path.resolve(process.cwd(), process.env.REMOTION_PROJECT_DIR ?? '../')
-const OUT_DIR = path.resolve(process.cwd(), process.env.RENDER_OUT_DIR ?? '../out')
+function getRemotionDir() {
+  return path.resolve(process.cwd(), process.env.REMOTION_PROJECT_DIR ?? '../')
+}
 
-export function getOutputPath(outDir: string = OUT_DIR): string {
-  return path.join(outDir, `${randomUUID()}.mp4`)
+function getOutDir() {
+  return path.resolve(process.cwd(), process.env.RENDER_OUT_DIR ?? '../out')
+}
+
+export function getOutputPath(outDir?: string): string {
+  return path.join(outDir ?? getOutDir(), `${randomUUID()}.mp4`)
 }
 
 export function buildRenderCommand(opts: {
@@ -18,17 +23,22 @@ export function buildRenderCommand(opts: {
   outputPath: string
   props: Record<string, unknown>
 }): string {
-  const propsJson = JSON.stringify(opts.props).replace(/'/g, "\\'")
-  return `npx remotion render ${opts.compositionId} "${opts.outputPath}" --props='${propsJson}'`
+  const propsJson = JSON.stringify(opts.props).replace(/"/g, '\\"')
+  return `npx remotion render ${opts.compositionId} "${opts.outputPath}" --props="${propsJson}"`
 }
 
 export async function render(opts: {
   compositionId: string
   props: Record<string, unknown>
 }): Promise<string> {
-  fs.mkdirSync(OUT_DIR, { recursive: true })
-  const outputPath = getOutputPath()
+  const outDir = getOutDir()
+  fs.mkdirSync(outDir, { recursive: true })
+  const outputPath = getOutputPath(outDir)
   const cmd = buildRenderCommand({ ...opts, outputPath })
-  await execAsync(cmd, { cwd: REMOTION_DIR, maxBuffer: 1024 * 1024 * 100 })
+  await execAsync(cmd, {
+    cwd: getRemotionDir(),
+    maxBuffer: 1024 * 1024 * 100,
+    timeout: 10 * 60 * 1000,
+  })
   return outputPath
 }
