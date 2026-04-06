@@ -174,7 +174,7 @@ export function ParamForm({ templateId, values, onChange, onSubmit, loading }: P
         disabled={loading}
         className="w-full bg-gray-900 text-white rounded-lg py-2.5 text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-700 transition-colors mt-2"
       >
-        {loading ? 'Render ediliyor...' : '▶ Videoyu Oluştur'}
+        {loading ? 'Render ediliyor...' : '▶ Render Et'}
       </button>
     </div>
   )
