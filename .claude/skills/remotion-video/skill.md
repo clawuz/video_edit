@@ -27,7 +27,7 @@ src/
 ## Workflow
 1. Kullanıcı istediği videoyu açıklar (süre, renkler, metin, yapı)
 2. `src/compositions/<AdName>.tsx` dosyasını oluştur
-3. `src/Root.tsx` içine yeni composition'ı kaydet
+3. `src/Root.tsx` içine yeni composition'ı kaydet (`src/index.ts` `registerRoot(RemotionRoot)` çağrısı zaten mevcut olmalı)
 4. `npx remotion studio` ile önizleme aç
 5. Kullanıcı onayladıktan sonra `npx remotion render <CompositionId> out/<name>.mp4` ile render et
 
@@ -70,6 +70,7 @@ export const MyComposition: React.FC = () => {
 
 ## Root.tsx Registration
 ```tsx
+import React from 'react';
 import { Composition } from 'remotion';
 import { MyComposition } from './compositions/MyComposition';
 
@@ -80,8 +81,8 @@ export const RemotionRoot: React.FC = () => (
       component={MyComposition}
       durationInFrames={30 * 30}  // 30 saniye @ 30fps
       fps={30}
-      width={1080}
-      height={1920}
+      width={1920}   // kullanıcı isteğine göre ayarla (örn. 1080x1920 dikey)
+      height={1080}
     />
   </>
 );
