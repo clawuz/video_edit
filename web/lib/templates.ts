@@ -79,13 +79,17 @@ export function getTemplate(id: string): Template {
 export function buildRenderProps(
   templateId: string,
   overrides: Record<string, unknown>,
-  format?: string,
+  format?: '1080x1920' | '1920x1080',
   durationSeconds?: number
 ): Record<string, unknown> & TemplateRenderMeta {
   const template = getTemplate(templateId)
 
   const fmt = format ?? template.defaultFormat
-  const [w, h] = fmt.split('x').map(Number)
+  const parts = fmt.split('x').map(Number)
+  if (parts.length !== 2 || parts.some(isNaN)) {
+    throw new Error(`Invalid format string: ${fmt}`)
+  }
+  const [w, h] = parts
   const fps = 30
   const dur = durationSeconds ?? template.defaultDurationSeconds
 
