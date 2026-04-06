@@ -10,6 +10,6 @@
     "jsx": "react-jsx",
     "outDir": "./dist"
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "remotion.config.ts"],
   "exclude": ["node_modules"]
 }

@@ -1,8 +1,9 @@
+import React from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
 
 export const HelloWorld: React.FC = () => {
   const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
+  const { fps } = useVideoConfig();
 
   const opacity = interpolate(frame, [0, 20], [0, 1], {
     extrapolateRight: "clamp",
