@@ -134,8 +134,9 @@ Video_edit/
 
 **Timeline:**
 - Yatay bar, video süresini temsil eder
-- Her altyazı satırı renkli blok olarak görünür
-- Oynatma cursor'ı (sadece görsel, interaktif değil — v1)
+- Her altyazı satırı renkli blok olarak görünür, sürükleyerek başlangıç/bitiş süresi ayarlanabilir
+- Blok kenarlarından tutup genişletme/daraltma ile süre değiştirme
+- Liste ve timeline çift yönlü senkronize: birinde yapılan değişiklik diğerine anında yansır
 - Zaman etiketleri (0:00, 0:10, 0:20...)
 
 **Render:**
@@ -155,10 +156,7 @@ Video_edit/
 - İndir butonu
 - Sil butonu (Firestore + Storage'dan kaldırır)
 
-**Auth:**
-- Google ile giriş (Firebase Auth)
-- Giriş yapılmamışsa Geçmiş tab'ı "Giriş yap" mesajı gösterir
-- Video Oluştur ve Altyazı tab'ları auth gerektirmez (local render)
+**Auth:** v1'de yok — tüm tab'lar giriş gerektirmez.
 
 ---
 
@@ -166,11 +164,10 @@ Video_edit/
 
 | Servis | Ne için |
 |--------|---------|
-| Authentication | Google Sign-In, kullanıcı kimliği |
-| Firestore | `videos` koleksiyonu: `userId, templateName, createdAt, storageUrl, params` |
-| Storage | `videos/<userId>/<uuid>.mp4` path formatı |
+| Firestore | `videos` koleksiyonu: `templateName, createdAt, storageUrl, params` |
+| Storage | `videos/<uuid>.mp4` path formatı |
 
-Auth opsiyonel tutulur: giriş yapmadan da video oluşturulabilir, ancak geçmiş kaydedilmez.
+**Authentication v1'de yok.** Tüm işlemler giriş gerektirmeden çalışır. Geçmiş tab'ı tüm kullanıcılara açıktır. Auth ilerleyen versiyonda eklenebilir.
 
 ---
 
@@ -202,7 +199,7 @@ npx remotion render ProductAd out/video.mp4 --props='{"title":"...","accentColor
 - Video klip kesme/birleştirme
 - Renk düzeltme (color grading)
 - Ses ekleme/düzenleme
-- Altyazı timeline'ında sürükleme ile süre ayarı (v2'ye bırakıldı)
+- Firebase Authentication (v2'ye bırakıldı)
 - Mobile responsive tasarım
 - Ödeme/abonelik sistemi
 - Deployment (Firebase Hosting) — local only
