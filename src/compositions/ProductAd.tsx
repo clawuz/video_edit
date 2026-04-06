@@ -10,7 +10,7 @@ export const ProductAd: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Hook: 0-5s — fade in başlık
+  // Title: 0-1s fade in
   const titleOpacity = interpolate(frame, [0, fps * 1], [0, 1], {
     extrapolateRight: 'clamp',
   });
@@ -59,9 +59,11 @@ export const ProductAd: React.FC = () => {
         (text, i) => {
           const start = fps * (5 + i * 3);
           const featureOpacity = interpolate(frame, [start, start + fps], [0, 1], {
+            extrapolateLeft: 'clamp',
             extrapolateRight: 'clamp',
           });
           const featureX = interpolate(frame, [start, start + fps], [-100, 0], {
+            extrapolateLeft: 'clamp',
             extrapolateRight: 'clamp',
           });
           return (
