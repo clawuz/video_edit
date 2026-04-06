@@ -2,8 +2,7 @@ import React from "react";
 import { Composition } from "remotion";
 import { HelloWorld } from "./compositions/HelloWorld";
 import { productAdSchema, ProductAd, ProductAdProps } from "./compositions/ProductAd";
-// Stats and TalkingHead will be added in Tasks 3 and 4
-// import { Stats, StatsProps } from "./compositions/Stats";
+import { statsSchema, Stats, StatsProps } from "./compositions/Stats";
 // import { TalkingHead, TalkingHeadProps } from "./compositions/TalkingHead";
 
 const productAdDefaults: ProductAdProps = {
@@ -15,7 +14,20 @@ const productAdDefaults: ProductAdProps = {
   fontFamily: 'sans-serif',
 };
 
-// statsDefaults and talkingHeadDefaults will be added in Tasks 3 and 4
+const statsDefaults: StatsProps = {
+  stats: [
+    { value: '47%', label: 'Increase in Engagement' },
+    { value: '2.3x', label: 'Return on Investment' },
+    { value: '150+', label: 'Happy Clients' },
+    { value: '$1.2M', label: 'Revenue Generated' },
+  ],
+  countUp: true,
+  accentColor: '#3b82f6',
+  backgroundColor: '#0f0f0f',
+  fontFamily: 'sans-serif',
+};
+
+// talkingHeadDefaults will be added in Task 4
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -38,7 +50,17 @@ export const RemotionRoot: React.FC = () => {
         defaultProps={productAdDefaults}
         schema={productAdSchema}
       />
-      {/* Stats and TalkingHead compositions will be added in Tasks 3 and 4 */}
+      <Composition
+        id="Stats"
+        component={Stats}
+        durationInFrames={600}
+        fps={30}
+        width={1080}
+        height={1920}
+        defaultProps={statsDefaults}
+        schema={statsSchema}
+      />
+      {/* TalkingHead composition will be added in Task 4 */}
     </>
   );
 };
