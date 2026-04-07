@@ -6,8 +6,7 @@ import path from 'path'
 import { randomUUID } from 'crypto'
 
 const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads')
-// Remotion's public dir (one level up from web/)
-const REMOTION_UPLOAD_DIR = path.join(process.cwd(), '..', 'public', 'uploads')
+const PORT = process.env.PORT ?? '3001'
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,15 +24,12 @@ export async function POST(req: NextRequest) {
 
     const filename = `${randomUUID()}${ext}`
     const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    // Save to web public (for preview) and Remotion public (for render)
     await mkdir(UPLOAD_DIR, { recursive: true })
-    await mkdir(REMOTION_UPLOAD_DIR, { recursive: true })
-    await writeFile(path.join(UPLOAD_DIR, filename), buffer)
-    await writeFile(path.join(REMOTION_UPLOAD_DIR, filename), buffer)
+    await writeFile(path.join(UPLOAD_DIR, filename), Buffer.from(bytes))
 
     return NextResponse.json({
       url: `/uploads/${filename}`,
+      // staticFile('uploads/filename') path — resolved via --public-dir at render time
       remotionUrl: `uploads/${filename}`,
     })
   } catch (err) {

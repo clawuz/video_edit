@@ -106,12 +106,12 @@ export const ProductAd: React.FC<ProductAdProps> = ({
         <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
           {/\.(mp4|webm|mov)$/i.test(backgroundMedia) ? (
             <Video
-              src={backgroundMedia.startsWith('http') ? backgroundMedia : staticFile(backgroundMedia)}
+              src={/^(https?:|data:)/.test(backgroundMedia) ? backgroundMedia : staticFile(backgroundMedia)}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (
             <Img
-              src={backgroundMedia.startsWith('http') ? backgroundMedia : staticFile(backgroundMedia)}
+              src={/^(https?:|data:)/.test(backgroundMedia) ? backgroundMedia : staticFile(backgroundMedia)}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           )}

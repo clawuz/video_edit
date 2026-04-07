@@ -27,7 +27,9 @@ export function buildRenderCommand(opts: {
   const height = opts.props.height as number | undefined
   const propsJson = JSON.stringify(opts.props).replace(/"/g, '\\"')
   const sizeFlags = width && height ? ` --width=${width} --height=${height}` : ''
-  return `npx remotion render ${opts.compositionId} "${opts.outputPath}" --props="${propsJson}"${sizeFlags} --concurrency=1`
+  // Point Remotion's public dir to web/public so staticFile('uploads/...') works
+  const publicDir = path.resolve(process.cwd(), 'public')
+  return `npx remotion render ${opts.compositionId} "${opts.outputPath}" --props="${propsJson}"${sizeFlags} --concurrency=1 --public-dir="${publicDir}"`
 }
 
 export async function render(opts: {
