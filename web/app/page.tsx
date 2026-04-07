@@ -7,6 +7,12 @@ import { ParamForm } from '@/components/ParamForm'
 import { VideoPreview } from '@/components/VideoPreview'
 import { getTemplate } from '@/lib/templates'
 
+const VALID_FORMATS = ['1080x1920', '1920x1080'] as const
+type VideoFormat = typeof VALID_FORMATS[number]
+function toVideoFormat(v: unknown): VideoFormat {
+  return VALID_FORMATS.includes(v as VideoFormat) ? (v as VideoFormat) : '1080x1920'
+}
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>('create')
   const [selectedTemplate, setSelectedTemplate] = useState('ProductAd')
@@ -35,7 +41,7 @@ export default function Home() {
         body: JSON.stringify({
           templateId: selectedTemplate,
           overrides: params,
-          format: String(params.format ?? '1080x1920'),
+          format: toVideoFormat(params.format),
           durationSeconds: Number(params.durationSeconds ?? 30),
         }),
       })
