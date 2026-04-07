@@ -26,7 +26,11 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer()
     await writeFile(path.join(UPLOAD_DIR, filename), Buffer.from(bytes))
 
-    return NextResponse.json({ url: `/uploads/${filename}` })
+    const absolutePath = path.join(UPLOAD_DIR, filename)
+    return NextResponse.json({
+      url: `/uploads/${filename}`,
+      remotionUrl: `file://${absolutePath}`,
+    })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Yükleme hatası'
     return NextResponse.json({ error: message }, { status: 500 })

@@ -172,7 +172,7 @@ export function ParamForm({ templateId, values, onChange, onSubmit, loading }: P
                 fd.append('file', file)
                 const res = await fetch('/api/upload', { method: 'POST', body: fd })
                 const data = await res.json()
-                if (data.url) update('backgroundMedia', data.url)
+                if (data.remotionUrl) update('backgroundMedia', data.remotionUrl)
               }}
             />
           </label>
