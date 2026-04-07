@@ -5,6 +5,7 @@ import {
   useVideoConfig,
   Img,
   Video,
+  staticFile,
 } from 'remotion';
 import { z } from 'zod';
 
@@ -100,12 +101,12 @@ export const TalkingHead: React.FC<TalkingHeadProps> = ({
         <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
           {/\.(mp4|webm|mov)$/i.test(backgroundMedia) ? (
             <Video
-              src={backgroundMedia}
+              src={backgroundMedia.startsWith('http') ? backgroundMedia : staticFile(backgroundMedia)}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (
             <Img
-              src={backgroundMedia}
+              src={backgroundMedia.startsWith('http') ? backgroundMedia : staticFile(backgroundMedia)}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           )}
