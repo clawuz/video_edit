@@ -3,6 +3,8 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import path from 'path'
 import fs from 'fs'
+import { stat } from 'fs/promises'
+import { Readable } from 'stream'
 
 function getOutDir() {
   return path.resolve(process.cwd(), process.env.RENDER_OUT_DIR ?? '../out')
@@ -25,12 +27,15 @@ export async function GET(
     return NextResponse.json({ error: 'Dosya bulunamadı' }, { status: 404 })
   }
 
-  const fileBuffer = fs.readFileSync(filePath)
-  return new NextResponse(fileBuffer, {
+  const fileStats = await stat(filePath)
+  const fileStream = fs.createReadStream(filePath)
+  const readableStream = Readable.toWeb(fileStream) as ReadableStream
+
+  return new NextResponse(readableStream, {
     headers: {
       'Content-Type': 'video/mp4',
       'Content-Disposition': `attachment; filename="${id}.mp4"`,
-      'Content-Length': fileBuffer.length.toString(),
+      'Content-Length': fileStats.size.toString(),
     },
   })
 }

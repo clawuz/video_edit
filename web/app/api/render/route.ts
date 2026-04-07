@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     const outputPath = await render({ compositionId: templateId, props })
     const id = path.basename(outputPath, '.mp4')
 
-    return NextResponse.json({ id, outputPath })
+    return NextResponse.json({ id })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Render hatası'
     return NextResponse.json({ error: message }, { status: 500 })
