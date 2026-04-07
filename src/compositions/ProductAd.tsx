@@ -4,6 +4,8 @@ import {
   interpolate,
   useCurrentFrame,
   useVideoConfig,
+  Img,
+  Video,
 } from 'remotion';
 import { z } from 'zod';
 
@@ -13,11 +15,50 @@ export const productAdSchema = z.object({
   features: z.array(z.string()),
   cta: z.string(),
   accentColor: z.string(),
-  backgroundColor: z.string(),
+  backgroundColor: z.string().default('#1a1a2e'),
   fontFamily: z.string(),
+  backgroundMedia: z.string().default(''),
+  titleFontSize: z.number().default(72),
+  bodyFontSize: z.number().default(36),
+  animationType: z.enum(['fade', 'slide', 'zoom', 'pop']).default('fade'),
 });
 
 export type ProductAdProps = z.infer<typeof productAdSchema>;
+
+function getAnimatedStyle(
+  frame: number,
+  startFrame: number,
+  animationType: string
+): React.CSSProperties {
+  const duration = 20
+  const progress = Math.min(1, Math.max(0, (frame - startFrame) / duration))
+
+  if (animationType === 'fade') {
+    return { opacity: progress }
+  }
+  if (animationType === 'slide') {
+    return {
+      opacity: progress,
+      transform: `translateY(${(1 - progress) * 40}px)`,
+    }
+  }
+  if (animationType === 'zoom') {
+    return {
+      opacity: progress,
+      transform: `scale(${0.5 + progress * 0.5})`,
+    }
+  }
+  if (animationType === 'pop') {
+    const scale = progress < 0.7
+      ? progress / 0.7 * 1.15
+      : 1.15 - (progress - 0.7) / 0.3 * 0.15
+    return {
+      opacity: Math.min(1, progress * 2),
+      transform: `scale(${scale})`,
+    }
+  }
+  return { opacity: progress }
+}
 
 export const ProductAd: React.FC<ProductAdProps> = ({
   title,
@@ -26,15 +67,15 @@ export const ProductAd: React.FC<ProductAdProps> = ({
   accentColor,
   backgroundColor,
   fontFamily,
+  backgroundMedia,
+  titleFontSize,
+  bodyFontSize,
+  animationType,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Title: 0-1s fade in
-  const titleOpacity = interpolate(frame, [0, fps * 1], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
+  const titleStyle = getAnimatedStyle(frame, 0, animationType);
 
   const ctaTranslate = interpolate(
     frame,
@@ -60,15 +101,33 @@ export const ProductAd: React.FC<ProductAdProps> = ({
         fontFamily,
       }}
     >
+      {backgroundMedia && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+          {/\.(mp4|webm|mov)$/i.test(backgroundMedia) ? (
+            <Video
+              src={backgroundMedia}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <Img
+              src={backgroundMedia}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          )}
+        </div>
+      )}
+
       {/* HOOK */}
       <div
         style={{
-          opacity: titleOpacity,
-          fontSize: 64,
+          ...titleStyle,
+          fontSize: titleFontSize,
           fontWeight: 900,
           color: '#ffffff',
           textAlign: 'center',
           padding: '0 48px',
+          position: 'relative',
+          zIndex: 1,
         }}
       >
         {title}
@@ -77,23 +136,17 @@ export const ProductAd: React.FC<ProductAdProps> = ({
       {/* FEATURES */}
       {features.slice(0, 4).map((text, i) => {
         const start = fps * (5 + i * 3);
-        const featureOpacity = interpolate(frame, [start, start + fps], [0, 1], {
-          extrapolateLeft: 'clamp',
-          extrapolateRight: 'clamp',
-        });
-        const featureX = interpolate(frame, [start, start + fps], [-100, 0], {
-          extrapolateLeft: 'clamp',
-          extrapolateRight: 'clamp',
-        });
+        const featureStyle = getAnimatedStyle(frame, start, animationType);
         return (
           <div
             key={`${i}-${text}`}
             style={{
-              opacity: featureOpacity,
-              transform: `translateX(${featureX}px)`,
-              fontSize: 36,
+              ...featureStyle,
+              fontSize: bodyFontSize,
               color: accentColor,
               fontWeight: 700,
+              position: 'relative',
+              zIndex: 1,
             }}
           >
             {text}
@@ -112,6 +165,8 @@ export const ProductAd: React.FC<ProductAdProps> = ({
           backgroundColor: accentColor,
           padding: '16px 40px',
           borderRadius: 8,
+          position: 'relative',
+          zIndex: 1,
         }}
       >
         {cta}

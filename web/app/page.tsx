@@ -85,6 +85,7 @@ export default function Home() {
               renderId={renderId}
               loading={loading}
               accentColor={String(params.accentColor ?? '#e67e22')}
+              format={toVideoFormat(params.format)}
             />
           </div>
         </div>

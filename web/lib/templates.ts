@@ -30,6 +30,10 @@ export const TEMPLATES: Template[] = [
       accentColor: '#e67e22',
       backgroundColor: '#1a1a2e',
       fontFamily: 'sans-serif',
+      backgroundMedia: '',
+      titleFontSize: 72,
+      bodyFontSize: 36,
+      animationType: 'fade',
     },
   },
   {
@@ -50,6 +54,9 @@ export const TEMPLATES: Template[] = [
       accentColor: '#3b82f6',
       backgroundColor: '#0f0f0f',
       fontFamily: 'sans-serif',
+      backgroundMedia: '',
+      bodyFontSize: 36,
+      animationType: 'fade',
     },
   },
   {
@@ -69,6 +76,10 @@ export const TEMPLATES: Template[] = [
       accentColor: '#10b981',
       backgroundColor: '#1a1a2e',
       fontFamily: 'sans-serif',
+      backgroundMedia: '',
+      titleFontSize: 24,
+      bodyFontSize: 32,
+      animationType: 'fade',
     },
   },
 ]

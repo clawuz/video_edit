@@ -4,17 +4,22 @@ interface VideoPreviewProps {
   renderId: string | null
   loading: boolean
   accentColor: string
+  format?: '1080x1920' | '1920x1080'
 }
 
-export function VideoPreview({ renderId, loading, accentColor }: VideoPreviewProps) {
+export function VideoPreview({ renderId, loading, accentColor, format = '1080x1920' }: VideoPreviewProps) {
+  const isLandscape = format === '1920x1080'
+  const mockupClass = isLandscape ? 'w-[356px] h-[200px]' : 'w-[200px] h-[356px]'
+  const videoClass = isLandscape ? 'max-w-[400px]' : 'max-h-[400px]'
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 h-full">
         <div
-          className="w-20 h-36 rounded-xl flex items-center justify-center"
+          className={`${mockupClass} rounded-xl flex items-center justify-center`}
           style={{ backgroundColor: '#1a1a2e' }}
         >
-          <div className="animate-spin w-6 h-6 border-2 border-white border-t-transparent rounded-full" />
+          <div className="animate-spin w-8 h-8 border-2 border-white border-t-transparent rounded-full" />
         </div>
         <p className="text-xs text-gray-400">Render ediliyor...</p>
       </div>
@@ -27,7 +32,7 @@ export function VideoPreview({ renderId, loading, accentColor }: VideoPreviewPro
         <video
           src={`/api/download/${renderId}`}
           controls
-          className="max-h-64 rounded-xl shadow-lg"
+          className={`${videoClass} rounded-xl shadow-lg`}
         />
         <a
           href={`/api/download/${renderId}`}
@@ -44,17 +49,14 @@ export function VideoPreview({ renderId, loading, accentColor }: VideoPreviewPro
     <div className="flex flex-col items-center justify-center gap-3 h-full">
       <p className="text-xs text-gray-400">Önizleme</p>
       <div
-        className="w-20 h-36 rounded-xl flex flex-col items-center justify-center gap-1.5 overflow-hidden"
+        className={`${mockupClass} rounded-xl flex flex-col items-center justify-center gap-2 overflow-hidden`}
         style={{ backgroundColor: '#1a1a2e' }}
       >
-        <div className="text-xs font-black text-white text-center px-2 leading-tight">
+        <div className="text-sm font-black text-white text-center px-3 leading-tight">
           Video çıktısı
         </div>
-        <div className="text-xs font-bold" style={{ color: accentColor }}>
-          burada
-        </div>
-        <div className="text-xs font-bold" style={{ color: accentColor }}>
-          görünür
+        <div className="text-sm font-bold" style={{ color: accentColor }}>
+          burada görünür
         </div>
       </div>
     </div>

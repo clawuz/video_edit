@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VideoEdit — Final Design</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; padding: 24px; color: #111; }
+  h1 { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+  .sub { font-size: 11px; color: #6b7280; margin-bottom: 20px; }
+  .browser { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+  .browser-bar { background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 8px 12px; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .url { background: #fff; border: 1px solid #e2e8f0; border-radius: 5px; flex: 1; padding: 3px 10px; font-size: 10px; color: #9ca3af; }
+
+  /* App shell */
+  .app { display: flex; flex-direction: column; height: 480px; }
+  .topnav { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 0 20px; display: flex; align-items: center; gap: 24px; height: 48px; }
+  .logo { font-size: 13px; font-weight: 800; letter-spacing: -0.5px; color: #111; }
+  .tabs { display: flex; gap: 0; flex: 1; }
+  .tab { font-size: 12px; padding: 0 16px; height: 48px; display: flex; align-items: center; border-bottom: 2px solid transparent; color: #9ca3af; cursor: pointer; font-weight: 500; }
+  .tab.active { color: #111; border-bottom-color: #111; font-weight: 600; }
+  .new-btn { background: #111; color: #fff; font-size: 11px; padding: 6px 14px; border-radius: 7px; font-weight: 600; }
+  .avatar { width: 30px; height: 30px; background: #e5e7eb; border-radius: 50%; }
+
+  /* Create tab */
+  .split { display: flex; flex: 1; overflow: hidden; }
+  .left-panel { width: 52%; padding: 20px; border-right: 1px solid #f3f4f6; overflow-y: auto; }
+  .right-panel { flex: 1; background: #f9fafb; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+
+  .section-label { font-size: 11px; font-weight: 600; color: #374151; margin-bottom: 8px; }
+  .template-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .tpl { border: 1.5px solid #e5e7eb; border-radius: 8px; overflow: hidden; cursor: pointer; }
+  .tpl.selected { border-color: #111; border-width: 2px; }
+  .tpl-thumb { height: 44px; }
+  .tpl-name { font-size: 10px; padding: 6px 8px; color: #374151; font-weight: 500; }
+  .tpl.selected .tpl-name { font-weight: 700; color: #111; }
+
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 10px; color: #6b7280; margin-bottom: 4px; font-weight: 500; }
+  .field input, .field select { width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 7px 10px; font-size: 11px; color: #111; }
+  .colors { display: flex; gap: 6px; }
+  .color-dot { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; }
+  .color-dot.active { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #111; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .render-btn { width: 100%; background: #111; color: #fff; border: none; border-radius: 8px; padding: 11px; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 4px; }
+
+  /* Phone preview */
+  .phone { width: 80px; height: 142px; background: #1a1a2e; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; overflow: hidden; position: relative; }
+  .phone-title { font-size: 8px; color: #fff; font-weight: 900; text-align: center; padding: 0 8px; line-height: 1.3; opacity: 0; animation: fadeIn 1s ease 0.5s forwards; }
+  .phone-feat { font-size: 7px; color: #e67e22; font-weight: 700; animation: slideIn 0.6s ease forwards; opacity: 0; }
+  .phone-feat:nth-child(2) { animation-delay: 1.2s; }
+  .phone-feat:nth-child(3) { animation-delay: 1.8s; }
+  .phone-feat:nth-child(4) { animation-delay: 2.4s; }
+  .phone-cta { position: absolute; bottom: 10px; background: #e67e22; padding: 4px 12px; border-radius: 4px; font-size: 7px; color: #fff; font-weight: 700; opacity: 0; animation: fadeIn 0.6s ease 3.2s forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+
+  .preview-label { font-size: 10px; color: #9ca3af; font-weight: 500; }
+  .dl-btn { background: #fff; border: 1.5px solid #e5e7eb; color: #374151; font-size: 10px; padding: 5px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+
+  /* Subtitle tab */
+  .sub-layout { display: flex; flex-direction: column; flex: 1; }
+  .sub-top { display: flex; flex: 1; border-bottom: 1px solid #f3f4f6; }
+  .sub-preview { flex: 1; background: #f9fafb; display: flex; align-items: center; justify-content: center; }
+  .sub-controls { width: 46%; padding: 16px; border-left: 1px solid #f3f4f6; overflow-y: auto; }
+  .sub-bottom { height: 90px; padding: 10px 16px; }
+
+  /* Upload area */
+  .upload-zone { border: 2px dashed #d1d5db; border-radius: 8px; padding: 12px; text-align: center; margin-bottom: 12px; }
+  .upload-zone p { font-size: 10px; color: #9ca3af; }
+
+  .import-row { display: flex; gap: 6px; margin-bottom: 12px; }
+  .import-btn { flex: 1; background: #f3f4f6; border: none; border-radius: 6px; padding: 6px; font-size: 10px; color: #374151; cursor: pointer; font-weight: 500; }
+  .import-btn.primary { background: #111; color: #fff; }
+
+  .style-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .style-field label { display: block; font-size: 9px; color: #9ca3af; margin-bottom: 3px; }
+  .style-field select, .style-field input { width: 100%; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 5px; padding: 4px 6px; font-size: 10px; }
+
+  /* Timeline */
+  .timeline-area { height: 100%; }
+  .tl-label { font-size: 9px; color: #9ca3af; margin-bottom: 5px; }
+  .tl-track { background: #f3f4f6; border-radius: 5px; height: 28px; position: relative; overflow: hidden; margin-bottom: 4px; }
+  .tl-block { position: absolute; top: 4px; height: 20px; border-radius: 3px; display: flex; align-items: center; padding: 0 5px; }
+  .tl-block span { font-size: 7px; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; }
+  .tl-cursor { position: absolute; top: 0; width: 2px; height: 100%; background: #111; }
+  .tl-times { display: flex; justify-content: space-between; }
+  .tl-times span { font-size: 8px; color: #9ca3af; }
+
+  .sub-entry { display: flex; align-items: center; gap: 8px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 5px; padding: 5px 8px; margin-bottom: 4px; cursor: pointer; }
+  .sub-entry.active { background: #eff6ff; border-color: #3b82f6; }
+  .sub-time { font-size: 9px; color: #9ca3af; white-space: nowrap; min-width: 60px; }
+  .sub-text { flex: 1; font-size: 10px; color: #111; }
+  .sub-del { font-size: 10px; color: #d1d5db; cursor: pointer; }
+
+  /* Phone with subtitle */
+  .phone-sub { width: 80px; height: 142px; background: #1a1a2e; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); display: flex; flex-direction: column; position: relative; overflow: hidden; }
+  .phone-content { flex: 1; display: flex; align-items: center; justify-content: center; }
+  .phone-subtitle-bar { background: rgba(0,0,0,0.65); padding: 5px 4px; text-align: center; }
+  .phone-subtitle-bar span { font-size: 7px; color: #fff; font-weight: 600; line-height: 1.3; }
+</style>
+</head>
+<body>
+<h1>VideoEdit — Tasarım Onayı</h1>
+<p class="sub">Clean White · Üst Nav · Split Panel · 3 tab. Bu ekranlar tasarımı temsil ediyor — onaylayabilirsin.</p>
+
+<!-- CREATE TAB -->
+<div style="margin-bottom:20px;">
+  <div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:8px;">Tab 1 — Video Oluştur</div>
+  <div class="browser">
+    <div class="browser-bar">
+      <div class="dot" style="background:#ff5f57"></div>
+      <div class="dot" style="background:#febc2e"></div>
+      <div class="dot" style="background:#28c840"></div>
+      <div class="url">localhost:3000</div>
+    </div>
+    <div class="app">
+      <div class="topnav">
+        <div class="logo">🎬 VideoEdit</div>
+        <div class="tabs">
+          <div class="tab active">Video Oluştur</div>
+          <div class="tab">Altyazı Ekle</div>
+          <div class="tab">Geçmiş</div>
+        </div>
+        <div class="new-btn">+ Yeni</div>
+        <div class="avatar"></div>
+      </div>
+      <div class="split">
+        <div class="left-panel">
+          <div class="section-label">Şablon Seç</div>
+          <div class="template-grid">
+            <div class="tpl selected">
+              <div class="tpl-thumb" style="background:linear-gradient(135deg,#1a1a2e,#e67e22)"></div>
+              <div class="tpl-name">Ürün Reklamı</div>
+            </div>
+            <div class="tpl">
+              <div class="tpl-thumb" style="background:linear-gradient(135deg,#0f0f0f,#3b82f6)"></div>
+              <div class="tpl-name">İstatistik</div>
+            </div>
+            <div class="tpl">
+              <div class="tpl-thumb" style="background:linear-gradient(135deg,#1a1a2e,#10b981)"></div>
+              <div class="tpl-name">Talking Head</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Başlık</label>
+            <input value="Your morning deserves better" />
+          </div>
+          <div class="field">
+            <label>Özellikler (her satır ayrı)</label>
+            <textarea style="width:100%;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:11px;height:52px;resize:none;">Single Origin Beans
+Roasted Fresh Weekly
+Shipped to Your Door</textarea>
+          </div>
+          <div class="field">
+            <label>CTA Metni</label>
+            <input value="mountainbrew.co" />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Vurgu Rengi</label>
+              <div class="colors">
+                <div class="color-dot active" style="background:#e67e22"></div>
+                <div class="color-dot" style="background:#3b82f6"></div>
+                <div class="color-dot" style="background:#10b981"></div>
+                <div class="color-dot" style="background:#ef4444"></div>
+                <div class="color-dot" style="background:#8b5cf6"></div>
+              </div>
+            </div>
+            <div class="field">
+              <label>Format</label>
+              <select><option>1080×1920 (Dikey)</option><option>1920×1080 (Yatay)</option></select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Font</label>
+              <select><option>Inter Bold</option><option>Poppins</option></select>
+            </div>
+            <div class="field">
+              <label>Süre</label>
+              <select><option>30 saniye</option><option>15 saniye</option><option>60 saniye</option></select>
+            </div>
+          </div>
+          <button class="render-btn">▶ Videoyu Oluştur</button>
+        </div>
+        <div class="right-panel">
+          <div class="preview-label">Önizleme</div>
+          <div class="phone">
+            <div class="phone-title">Your morning deserves better</div>
+            <div class="phone-feat">Single Origin Beans</div>
+            <div class="phone-feat">Roasted Fresh Weekly</div>
+            <div class="phone-feat">Shipped to Your Door</div>
+            <div class="phone-cta">mountainbrew.co</div>
+          </div>
+          <button class="dl-btn">⬇ MP4 İndir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUBTITLE TAB -->
+<div>
+  <div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:8px;">Tab 2 — Altyazı Ekle</div>
+  <div class="browser">
+    <div class="browser-bar">
+      <div class="dot" style="background:#ff5f57"></div>
+      <div class="dot" style="background:#febc2e"></div>
+      <div class="dot" style="background:#28c840"></div>
+      <div class="url">localhost:3000/subtitle</div>
+    </div>
+    <div class="app">
+      <div class="topnav">
+        <div class="logo">🎬 VideoEdit</div>
+        <div class="tabs">
+          <div class="tab">Video Oluştur</div>
+          <div class="tab active">Altyazı Ekle</div>
+          <div class="tab">Geçmiş</div>
+        </div>
+        <div class="new-btn">+ Yeni</div>
+        <div class="avatar"></div>
+      </div>
+
+      <div class="sub-layout">
+        <div class="sub-top">
+          <!-- Preview -->
+          <div class="sub-preview">
+            <div class="phone-sub">
+              <div class="phone-content">
+                <div style="font-size:8px;color:#e67e22;font-weight:700;text-align:center;padding:0 6px;line-height:1.4;">Single Origin<br>Beans</div>
+              </div>
+              <div class="phone-subtitle-bar">
+                <span>Single Origin Beans</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stil kontrolleri -->
+          <div class="sub-controls">
+            <div class="upload-zone">
+              <p>📁 MP4 yükle veya sürükle bırak</p>
+            </div>
+            <div class="import-row">
+              <button class="import-btn primary">SRT İçe Aktar</button>
+              <button class="import-btn">+ Satır Ekle</button>
+            </div>
+
+            <div style="margin-bottom:12px;">
+              <div class="sub-entry active">
+                <div class="sub-time">0:00 – 0:03</div>
+                <div class="sub-text">Günaydın, hayalindeki kahve</div>
+                <div class="sub-del">✕</div>
+              </div>
+              <div class="sub-entry">
+                <div class="sub-time">0:03 – 0:07</div>
+                <div class="sub-text">Single Origin Beans</div>
+                <div class="sub-del">✕</div>
+              </div>
+              <div class="sub-entry">
+                <div class="sub-time">0:07 – 0:12</div>
+                <div class="sub-text">Roasted Fresh Weekly</div>
+                <div class="sub-del">✕</div>
+              </div>
+            </div>
+
+            <div class="section-label">Stil Ayarları</div>
+            <div class="style-grid">
+              <div class="style-field"><label>Font</label><select><option>Inter</option><option>Poppins</option><option>Roboto</option></select></div>
+              <div class="style-field"><label>Boyut</label><select><option>24px</option><option>18px</option><option>32px</option></select></div>
+              <div class="style-field"><label>Konum</label><select><option>Alt</option><option>Orta</option><option>Üst</option></select></div>
+              <div class="style-field"><label>Animasyon</label><select><option>Fade</option><option>Slide Up</option><option>Pop</option></select></div>
+              <div class="style-field"><label>Metin Rengi</label>
+                <div style="display:flex;gap:4px;margin-top:4px;">
+                  <div style="width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid #111;cursor:pointer;"></div>
+                  <div style="width:16px;height:16px;border-radius:50%;background:#ffd700;cursor:pointer;"></div>
+                  <div style="width:16px;height:16px;border-radius:50%;background:#ff6b6b;cursor:pointer;"></div>
+                </div>
+              </div>
+              <div class="style-field"><label>Arka Plan</label><select><option>%60 Siyah</option><option>Yok</option><option>%100 Siyah</option></select></div>
+            </div>
+            <button class="render-btn" style="margin-top:12px;">▶ Altyazılı Video Oluştur</button>
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="sub-bottom">
+          <div class="tl-label">Timeline</div>
+          <div class="tl-track">
+            <div class="tl-block" style="left:0%;width:18%;background:#3b82f6;opacity:0.7;"><span>Günaydın...</span></div>
+            <div class="tl-block" style="left:19%;width:22%;background:#3b82f6;opacity:0.85;"><span>Single Origin...</span></div>
+            <div class="tl-block" style="left:42%;width:26%;background:#3b82f6;opacity:0.7;"><span>Roasted Fresh...</span></div>
+            <div class="tl-cursor" style="left:28%"></div>
+          </div>
+          <div class="tl-times">
+            <span>0:00</span><span>0:10</span><span>0:20</span><span>0:30</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

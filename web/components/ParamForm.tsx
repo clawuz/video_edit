@@ -133,6 +133,65 @@ export function ParamForm({ templateId, values, onChange, onSubmit, loading }: P
         </div>
       </div>
 
+      <div>
+        <label className="block text-xs text-gray-500 mb-1 font-medium">Arka Plan Rengi</label>
+        <div className="flex gap-2 items-center">
+          {['#1a1a2e', '#0f0f0f', '#ffffff', '#f8f9fa', '#1e293b'].map((c) => (
+            <button
+              key={c}
+              onClick={() => update('backgroundColor', c)}
+              className="w-5 h-5 rounded-full transition-transform hover:scale-110 border border-gray-300"
+              style={{
+                backgroundColor: c,
+                boxShadow: values.backgroundColor === c ? `0 0 0 2px white, 0 0 0 4px ${c}` : undefined,
+              }}
+            />
+          ))}
+          <input
+            type="color"
+            value={String(values.backgroundColor ?? '#1a1a2e')}
+            onChange={(e) => update('backgroundColor', e.target.value)}
+            className="w-5 h-5 rounded cursor-pointer border-0"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-xs text-gray-500 mb-1 font-medium">Arka Plan Görseli / Videosu</label>
+        <div className="flex items-center gap-2">
+          <label className="cursor-pointer bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5 text-xs text-gray-600 hover:border-gray-400 transition-colors">
+            📁 Dosya Seç
+            <input
+              type="file"
+              accept="image/*,video/mp4,video/webm"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                const fd = new FormData()
+                fd.append('file', file)
+                const res = await fetch('/api/upload', { method: 'POST', body: fd })
+                const data = await res.json()
+                if (data.url) update('backgroundMedia', data.url)
+              }}
+            />
+          </label>
+          {values.backgroundMedia && (
+            <>
+              <span className="text-xs text-gray-400 truncate max-w-[120px]">
+                {String(values.backgroundMedia).split('/').pop()}
+              </span>
+              <button
+                onClick={() => update('backgroundMedia', '')}
+                className="text-xs text-gray-400 hover:text-red-500"
+              >
+                ✕
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label htmlFor="fontFamily" className="block text-xs text-gray-500 mb-1 font-medium">Font</label>
@@ -165,6 +224,43 @@ export function ParamForm({ templateId, values, onChange, onSubmit, loading }: P
             onChange={(e) => update('durationSeconds', Number(e.target.value))}
           >
             {DURATIONS.map((d) => <option key={d} value={d}>{d} saniye</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1 font-medium">Başlık Boyutu</label>
+          <select
+            className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm"
+            value={String(values.titleFontSize ?? 72)}
+            onChange={(e) => update('titleFontSize', Number(e.target.value))}
+          >
+            {[36, 48, 60, 72, 96, 120].map((s) => (
+              <option key={s} value={s}>{s}px</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1 font-medium">Metin Boyutu</label>
+          <select
+            className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm"
+            value={String(values.bodyFontSize ?? 36)}
+            onChange={(e) => update('bodyFontSize', Number(e.target.value))}
+          >
+            {[18, 24, 32, 36, 48].map((s) => (
+              <option key={s} value={s}>{s}px</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1 font-medium">Animasyon</label>
+          <select
+            className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm"
+            value={String(values.animationType ?? 'fade')}
+            onChange={(e) => update('animationType', e.target.value)}
+          >
+            <option value="fade">Fade (Solma)</option>
+            <option value="slide">Slide (Kayma)</option>
+            <option value="zoom">Zoom (Yakınlaş)</option>
+            <option value="pop">Pop (Zıplama)</option>
           </select>
         </div>
       </div>

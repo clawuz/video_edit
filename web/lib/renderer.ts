@@ -23,8 +23,11 @@ export function buildRenderCommand(opts: {
   outputPath: string
   props: Record<string, unknown>
 }): string {
+  const width = opts.props.width as number | undefined
+  const height = opts.props.height as number | undefined
   const propsJson = JSON.stringify(opts.props).replace(/"/g, '\\"')
-  return `npx remotion render ${opts.compositionId} "${opts.outputPath}" --props="${propsJson}"`
+  const sizeFlags = width && height ? ` --width=${width} --height=${height}` : ''
+  return `npx remotion render ${opts.compositionId} "${opts.outputPath}" --props="${propsJson}"${sizeFlags} --concurrency=1`
 }
 
 export async function render(opts: {
