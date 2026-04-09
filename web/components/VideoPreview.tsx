@@ -9,8 +9,8 @@ interface VideoPreviewProps {
 
 export function VideoPreview({ renderId, loading, accentColor, format = '1080x1920' }: VideoPreviewProps) {
   const isLandscape = format === '1920x1080'
-  const mockupClass = isLandscape ? 'w-[356px] h-[200px]' : 'w-[200px] h-[356px]'
-  const videoClass = isLandscape ? 'max-w-[400px]' : 'max-h-[400px]'
+  const mockupClass = isLandscape ? 'w-[445px] h-[250px]' : 'w-[250px] h-[445px]'
+  const videoClass = isLandscape ? 'max-w-[500px]' : 'max-h-[500px]'
 
   if (loading) {
     return (
