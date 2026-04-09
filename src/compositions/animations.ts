@@ -25,9 +25,12 @@ export function getElementStyle(
     return { style: { opacity: 0, pointerEvents: 'none' }, entryProgress: 0, exitProgress: 0 }
   }
 
+  const totalFrames = endFrame - startFrame
+  const animFrames = Math.min(ANIM_FRAMES, Math.floor(totalFrames / 2))
+
   // Entry phase
-  if (frame < startFrame + ANIM_FRAMES) {
-    const p = (frame - startFrame) / ANIM_FRAMES
+  if (frame < startFrame + animFrames) {
+    const p = animFrames > 0 ? (frame - startFrame) / animFrames : 1
     return {
       style: PER_LETTER_ENTRY.has(entryAnim)
         ? { opacity: 1, ...getSteadyStyle(entryAnim) }
@@ -38,9 +41,9 @@ export function getElementStyle(
   }
 
   // Exit phase
-  const exitStart = endFrame - ANIM_FRAMES
+  const exitStart = endFrame - animFrames
   if (frame >= exitStart) {
-    const p = (frame - exitStart) / ANIM_FRAMES
+    const p = animFrames > 0 ? (frame - exitStart) / animFrames : 1
     return {
       style: PER_LETTER_EXIT.has(exitAnim)
         ? { opacity: 1, ...getSteadyStyle(entryAnim) }
@@ -89,10 +92,6 @@ export function applyEntry(p: number, anim: EntryAnimType): React.CSSProperties 
       return { opacity: p, textShadow: `0 0 ${glow}px currentColor, 0 0 ${glow * 2}px currentColor` }
     }
     case 'spin-3d': return { opacity: p, transform: `perspective(800px) rotateY(${(1 - p) * 90}deg)` }
-    case 'glitch': {
-      const offset = (1 - p) * 6 * Math.sin(p * Math.PI * 4)
-      return { opacity: p, transform: `translateX(${offset}px)` }
-    }
     default: return { opacity: p }
   }
 }
