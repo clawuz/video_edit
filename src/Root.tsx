@@ -1,21 +1,41 @@
 import React from "react";
 import { Composition } from "remotion";
 import { HelloWorld } from "./compositions/HelloWorld";
-import { productAdSchema, ProductAd, ProductAdProps } from "./compositions/ProductAd";
-import { statsSchema, Stats, StatsProps } from "./compositions/Stats";
-import { talkingHeadSchema, TalkingHead, TalkingHeadProps } from "./compositions/TalkingHead";
+import { ProductAd, ProductAdProps } from "./compositions/ProductAd";
+import { Stats, StatsProps } from "./compositions/Stats";
+import { TalkingHead, TalkingHeadProps } from "./compositions/TalkingHead";
 
 const productAdDefaults: ProductAdProps = {
   title: 'Your morning deserves better',
-  features: ['Single Origin Beans', 'Roasted Fresh Weekly', 'Shipped to Your Door'],
+  showTitle: true,
+  titleStartSec: 0,
+  titleDurationSec: 10,
+  titleEntryAnim: 'fade',
+  titleExitAnim: 'fade-out',
+  body: [
+    { text: 'Single Origin Beans', slot: 1, startSec: 5, durationSec: 8, entryAnim: 'slide-up', exitAnim: 'fade-out' },
+    { text: 'Roasted Fresh Weekly', slot: 2, startSec: 8, durationSec: 8, entryAnim: 'slide-up', exitAnim: 'fade-out' },
+    { text: 'Shipped to Your Door', slot: 3, startSec: 11, durationSec: 8, entryAnim: 'slide-up', exitAnim: 'fade-out' },
+  ],
+  showBody: true,
   cta: 'mountainbrew.co',
+  showCta: true,
+  ctaMode: 'text',
+  ctaStartSec: 20,
+  ctaDurationSec: 8,
+  ctaEntryAnim: 'slide-up',
+  ctaExitAnim: 'fade-out',
+  ctaBgColor: '#e67e22',
+  ctaOpacity: 100,
+  ctaLogoUrl: '',
+  ctaLogoHeight: 80,
   accentColor: '#e67e22',
+  accentOpacity: 100,
   backgroundColor: '#1a1a2e',
   fontFamily: 'sans-serif',
   backgroundMedia: '',
   titleFontSize: 72,
   bodyFontSize: 36,
-  animationType: 'fade' as const,
 };
 
 const statsDefaults: StatsProps = {
@@ -69,7 +89,7 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
         defaultProps={productAdDefaults}
-        schema={productAdSchema}
+        calculateMetadata={({ props }) => ({ props })}
       />
       <Composition
         id="Stats"
@@ -79,7 +99,7 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
         defaultProps={statsDefaults}
-        schema={statsSchema}
+        calculateMetadata={({ props }) => ({ props })}
       />
       <Composition
         id="TalkingHead"
@@ -89,7 +109,7 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
         defaultProps={talkingHeadDefaults}
-        schema={talkingHeadSchema}
+        calculateMetadata={({ props }) => ({ props })}
       />
     </>
   );
