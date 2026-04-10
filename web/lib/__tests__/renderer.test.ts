@@ -5,12 +5,12 @@ describe('renderer', () => {
     const cmd = buildRenderCommand({
       compositionId: 'ProductAd',
       outputPath: '/tmp/test.mp4',
-      props: { title: 'Test', accentColor: '#fff' },
+      propsFile: '/tmp/props.json',
     })
     expect(cmd).toContain('npx remotion render ProductAd')
     expect(cmd).toContain('/tmp/test.mp4')
     expect(cmd).toContain('--props=')
-    expect(cmd).toContain('Test')
+    expect(cmd).toContain('/tmp/props.json')
   })
 
   test('getOutputPath uuid içeren mp4 yolu döner', () => {

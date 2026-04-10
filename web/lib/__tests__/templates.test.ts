@@ -19,7 +19,7 @@ describe('templates', () => {
     const props = buildRenderProps('ProductAd', { title: 'Test Başlık' })
     expect(props.title).toBe('Test Başlık')
     expect(props.accentColor).toBe('#e67e22') // default korunur
-    expect(props.features).toBeDefined()
+    expect(props.body).toBeDefined()
   })
 
   test('buildRenderProps includes width/height/durationInFrames/fps', () => {

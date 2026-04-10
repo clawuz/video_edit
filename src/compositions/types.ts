@@ -19,8 +19,8 @@ export type EntryAnimType = typeof ENTRY_ANIM_TYPES[number]
 export type ExitAnimType = typeof EXIT_ANIM_TYPES[number]
 
 /** Animations that require per-letter rendering via LetterAnimated */
-export const PER_LETTER_ENTRY: ReadonlySet<EntryAnimType> = new Set(['wave', 'split', 'glitch'])
-export const PER_LETTER_EXIT: ReadonlySet<ExitAnimType> = new Set(['wave-out', 'split-out', 'glitch-out'])
+export const PER_LETTER_ENTRY: ReadonlySet<EntryAnimType> = new Set<EntryAnimType>(['wave', 'split', 'glitch'])
+export const PER_LETTER_EXIT: ReadonlySet<ExitAnimType> = new Set<ExitAnimType>(['wave-out', 'split-out', 'glitch-out'])
 
 export interface BodyItem {
   text: string
