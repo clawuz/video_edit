@@ -6,11 +6,10 @@ import { TemplateGrid } from '@/components/TemplateGrid'
 import { ParamForm } from '@/components/ParamForm'
 import { VideoPreview } from '@/components/VideoPreview'
 import { getTemplate } from '@/lib/templates'
+import { PLATFORM_KEYS, PlatformKey } from '../../src/compositions/platforms'
 
-const VALID_FORMATS = ['1080x1920', '1920x1080'] as const
-type VideoFormat = typeof VALID_FORMATS[number]
-function toVideoFormat(v: unknown): VideoFormat {
-  return VALID_FORMATS.includes(v as VideoFormat) ? (v as VideoFormat) : '1080x1920'
+function toPlatformKey(v: unknown): PlatformKey {
+  return (PLATFORM_KEYS as readonly string[]).includes(v as string) ? (v as PlatformKey) : '9:16'
 }
 
 export default function Home() {
@@ -41,7 +40,7 @@ export default function Home() {
         body: JSON.stringify({
           templateId: selectedTemplate,
           overrides: params,
-          format: toVideoFormat(params.format),
+          platform: toPlatformKey(params.platform),
           durationSeconds: Number(params.durationSeconds ?? 30),
         }),
       })
@@ -85,7 +84,7 @@ export default function Home() {
               renderId={renderId}
               loading={loading}
               accentColor={String(params.accentColor ?? '#e67e22')}
-              format={toVideoFormat(params.format)}
+              platform={toPlatformKey(params.platform)}
             />
           </div>
         </div>
