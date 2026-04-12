@@ -1,11 +1,10 @@
 'use client'
 import { useState } from 'react'
 import { ColorPicker } from './ColorPicker'
-import { BodyItem, EntryAnimType, ExitAnimType } from '../../src/compositions/types'
+import { BodyItem, EntryAnimType, ExitAnimType, SubtitleEntry } from '../../src/compositions/types'
+import { PLATFORMS, PLATFORM_KEYS, FONTS } from '../../src/compositions/platforms'
 
-const FONTS = ['sans-serif', 'Inter', 'Poppins', 'Roboto']
 const DURATIONS = [15, 30, 60]
-const FORMATS = ['1080x1920', '1920x1080']
 
 const ENTRY_GROUPS = [
   { label: '— Yok',    options: ['none'] },
@@ -344,13 +343,8 @@ function StatsForm({ values, update }: { values: Record<string, unknown>; update
   )
 }
 
-function TalkingHeadForm({ values, update }: { values: Record<string, unknown>; update: (k: string, v: unknown) => void }) {
-  return (
-    <div>
-      <label className="block text-xs text-gray-500 mb-1 font-medium">Lower Third Metni</label>
-      <input className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" value={String(values.lowerThird ?? '')} onChange={e => update('lowerThird', e.target.value)} />
-    </div>
-  )
+function SubtitleForm({ values, update }: { values: Record<string, unknown>; update: (k: string, v: unknown) => void }) {
+  return <div className="text-xs text-gray-400 py-2">Altyazı formu Task 13'te eklenecek.</div>
 }
 
 function CommonFields({ values, update }: { values: Record<string, unknown>; update: (k: string, v: unknown) => void }) {
@@ -408,9 +402,9 @@ function CommonFields({ values, update }: { values: Record<string, unknown>; upd
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1 font-medium">Format</label>
-          <select className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" value={String(values.format ?? '1080x1920')} onChange={e => update('format', e.target.value)}>
-            {FORMATS.map(f => <option key={f} value={f}>{f === '1080x1920' ? '1080×1920 (Dikey)' : '1920×1080 (Yatay)'}</option>)}
+          <label className="block text-xs text-gray-500 mb-1 font-medium">Platform</label>
+          <select className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" value={String(values.platform ?? '9:16')} onChange={e => update('platform', e.target.value)}>
+            {PLATFORM_KEYS.map(k => <option key={k} value={k}>{PLATFORMS[k].label}</option>)}
           </select>
         </div>
         <div>
@@ -451,7 +445,7 @@ export function ParamForm({ templateId, values, onChange, onSubmit, loading }: P
     <div className="space-y-3">
       {templateId === 'ProductAd' && <ProductAdForm values={values} update={update} />}
       {templateId === 'Stats' && <StatsForm values={values} update={update} />}
-      {templateId === 'TalkingHead' && <TalkingHeadForm values={values} update={update} />}
+      {templateId === 'Subtitle' && <SubtitleForm values={values} update={update} />}
 
       <CommonFields values={values} update={update} />
 
