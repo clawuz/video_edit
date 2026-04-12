@@ -351,6 +351,7 @@ function SubtitleForm({ values, update }: { values: Record<string, unknown>; upd
   const [uploading, setUploading] = useState(false)
   const [whisperStatus, setWhisperStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
   const [whisperMessage, setWhisperMessage] = useState('')
+  const [whisperProgress, setWhisperProgress] = useState(0)
 
   async function handleWhisper() {
     const mediaUrl = String(values.backgroundMedia ?? '')
@@ -360,6 +361,18 @@ function SubtitleForm({ values, update }: { values: Record<string, unknown>; upd
       return
     }
     setWhisperStatus('loading')
+    setWhisperProgress(0)
+
+    // Video süresine göre tahmini analiz süresi (CPU'da ~2x realtime)
+    const durationSec = Number(values.durationSeconds ?? 30)
+    const estimatedMs = durationSec * 2000
+    const startTime = Date.now()
+    const timer = setInterval(() => {
+      const elapsed = Date.now() - startTime
+      const estimated = Math.min((elapsed / estimatedMs) * 95, 95)
+      setWhisperProgress(Math.round(estimated))
+    }, 300)
+
     try {
       const res = await fetch('/api/transcribe', {
         method: 'POST',
@@ -373,10 +386,13 @@ function SubtitleForm({ values, update }: { values: Record<string, unknown>; upd
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
+      clearInterval(timer)
+      setWhisperProgress(100)
       update('subtitles', data.subtitles)
       setWhisperStatus('done')
       setWhisperMessage(`${data.subtitles.length} altyazı oluşturuldu`)
     } catch (err) {
+      clearInterval(timer)
       setWhisperStatus('error')
       setWhisperMessage(err instanceof Error ? err.message : 'Hata')
     }
@@ -504,7 +520,7 @@ function SubtitleForm({ values, update }: { values: Record<string, unknown>; upd
             disabled={whisperStatus === 'loading'}
             className="flex-1 text-xs bg-indigo-600 text-white rounded-md py-1.5 px-3 font-medium disabled:opacity-50 hover:bg-indigo-700 transition-colors"
           >
-            {whisperStatus === 'loading' ? '⏳ Analiz ediliyor...' : '🎤 Whisper ile Oluştur'}
+            {whisperStatus === 'loading' ? `⏳ Analiz ediliyor... %${whisperProgress}` : '🎤 Whisper ile Oluştur'}
           </button>
           <label className="flex-1 text-xs bg-gray-200 text-gray-700 rounded-md py-1.5 px-3 font-medium cursor-pointer text-center hover:bg-gray-300 transition-colors">
             📂 SRT Yükle
@@ -512,6 +528,15 @@ function SubtitleForm({ values, update }: { values: Record<string, unknown>; upd
               onChange={e => e.target.files?.[0] && handleSrtImport(e.target.files[0])} />
           </label>
         </div>
+
+        {whisperStatus === 'loading' && (
+          <div className="w-full bg-gray-200 rounded-full h-1.5">
+            <div
+              className="bg-indigo-500 h-1.5 rounded-full transition-all duration-300"
+              style={{ width: `${whisperProgress}%` }}
+            />
+          </div>
+        )}
 
         {whisperStatus === 'done' && (
           <p className="text-xs text-emerald-600 font-medium">✓ {whisperMessage}</p>
