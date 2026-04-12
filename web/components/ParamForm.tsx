@@ -344,7 +344,287 @@ function StatsForm({ values, update }: { values: Record<string, unknown>; update
 }
 
 function SubtitleForm({ values, update }: { values: Record<string, unknown>; update: (k: string, v: unknown) => void }) {
-  return <div className="text-xs text-gray-400 py-2">Altyazı formu Task 13'te eklenecek.</div>
+  const subtitles: SubtitleEntry[] = Array.isArray(values.subtitles)
+    ? (values.subtitles as SubtitleEntry[])
+    : []
+
+  const [whisperStatus, setWhisperStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+  const [whisperMessage, setWhisperMessage] = useState('')
+
+  async function handleWhisper() {
+    const mediaUrl = String(values.backgroundMedia ?? '')
+    if (!mediaUrl) {
+      setWhisperStatus('error')
+      setWhisperMessage('Önce arkaplan medyası yükleyin')
+      return
+    }
+    setWhisperStatus('loading')
+    try {
+      const res = await fetch('/api/transcribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mediaUrl,
+          language: values.subtitleLang ?? 'tr',
+          splitMode: values.splitMode ?? 'sentence',
+          chunkSize: Number(values.chunkSize ?? 5),
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      update('subtitles', data.subtitles)
+      setWhisperStatus('done')
+      setWhisperMessage(`${data.subtitles.length} altyazı oluşturuldu`)
+    } catch (err) {
+      setWhisperStatus('error')
+      setWhisperMessage(err instanceof Error ? err.message : 'Hata')
+    }
+  }
+
+  async function handleSrtImport(file: File) {
+    const text = await file.text()
+    const res = await fetch('/api/srt-parse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ srt: text }),
+    })
+    const data = await res.json()
+    if (res.ok) update('subtitles', data.subtitles)
+  }
+
+  async function handleSrtExport() {
+    const res = await fetch('/api/srt-export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subtitles }),
+    })
+    if (!res.ok) return
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'subtitles.srt'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  function updateSubtitle(idx: number, field: keyof SubtitleEntry, val: unknown) {
+    const updated = subtitles.map((s, i) =>
+      i === idx ? { ...s, [field]: field === 'text' ? val : Number(val) } : s
+    )
+    update('subtitles', updated)
+  }
+
+  function addSubtitle() {
+    const lastEnd = subtitles.length > 0 ? subtitles[subtitles.length - 1].endMs : 0
+    update('subtitles', [...subtitles, { startMs: lastEnd, endMs: lastEnd + 3000, text: '' }])
+  }
+
+  function removeSubtitle(idx: number) {
+    update('subtitles', subtitles.filter((_, i) => i !== idx))
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Whisper + SRT */}
+      <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+        <div className="flex gap-2 items-center">
+          <label className="text-xs text-gray-500 font-medium">Dil:</label>
+          <label className="flex items-center gap-1 text-xs cursor-pointer">
+            <input type="radio" name="subtitleLang" value="tr"
+              checked={(values.subtitleLang ?? 'tr') === 'tr'}
+              onChange={() => update('subtitleLang', 'tr')} />
+            Türkçe
+          </label>
+          <label className="flex items-center gap-1 text-xs cursor-pointer">
+            <input type="radio" name="subtitleLang" value="en"
+              checked={values.subtitleLang === 'en'}
+              onChange={() => update('subtitleLang', 'en')} />
+            İngilizce
+          </label>
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={handleWhisper}
+            disabled={whisperStatus === 'loading'}
+            className="flex-1 text-xs bg-indigo-600 text-white rounded-md py-1.5 px-3 font-medium disabled:opacity-50 hover:bg-indigo-700 transition-colors"
+          >
+            {whisperStatus === 'loading' ? '⏳ Analiz ediliyor...' : '🎤 Whisper ile Oluştur'}
+          </button>
+          <label className="flex-1 text-xs bg-gray-200 text-gray-700 rounded-md py-1.5 px-3 font-medium cursor-pointer text-center hover:bg-gray-300 transition-colors">
+            📂 SRT Yükle
+            <input type="file" accept=".srt" className="hidden"
+              onChange={e => e.target.files?.[0] && handleSrtImport(e.target.files[0])} />
+          </label>
+        </div>
+
+        {whisperStatus === 'done' && (
+          <p className="text-xs text-emerald-600 font-medium">✓ {whisperMessage}</p>
+        )}
+        {whisperStatus === 'error' && (
+          <p className="text-xs text-red-500">⚠ {whisperMessage}</p>
+        )}
+      </div>
+
+      {/* Bölümleme */}
+      <div className="grid grid-cols-3 gap-2">
+        {(['sentence', 'word', 'chunk'] as const).map(mode => (
+          <label key={mode} className="flex items-center gap-1 text-xs cursor-pointer">
+            <input type="radio" name="splitMode" value={mode}
+              checked={(values.splitMode ?? 'sentence') === mode}
+              onChange={() => update('splitMode', mode)} />
+            {mode === 'sentence' ? 'Cümle' : mode === 'word' ? 'Kelime' : 'Chunk'}
+          </label>
+        ))}
+      </div>
+
+      {values.splitMode === 'chunk' && (
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Chunk boyutu (kelime)</label>
+          <input type="number" min={1} max={20}
+            value={Number(values.chunkSize ?? 5)}
+            onChange={e => update('chunkSize', Number(e.target.value))}
+            className="w-20 bg-gray-50 border border-gray-200 rounded-md px-2 py-1 text-xs" />
+        </div>
+      )}
+
+      {/* Altyazı listesi */}
+      <div className="space-y-2 max-h-64 overflow-y-auto">
+        {subtitles.map((s, i) => (
+          <div key={i} className="border border-gray-200 rounded-lg p-2 bg-white">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="flex gap-1 items-center">
+                <input type="number" step={100}
+                  value={s.startMs}
+                  onChange={e => updateSubtitle(i, 'startMs', e.target.value)}
+                  className="w-20 bg-gray-50 border border-gray-200 rounded px-1.5 py-1 text-xs" />
+                <span className="text-xs text-gray-400">→</span>
+                <input type="number" step={100}
+                  value={s.endMs}
+                  onChange={e => updateSubtitle(i, 'endMs', e.target.value)}
+                  className="w-20 bg-gray-50 border border-gray-200 rounded px-1.5 py-1 text-xs" />
+              </div>
+              <button onClick={() => removeSubtitle(i)}
+                className="ml-auto text-xs text-gray-400 hover:text-red-500">✕</button>
+            </div>
+            <input type="text"
+              value={s.text}
+              onChange={e => updateSubtitle(i, 'text', e.target.value)}
+              className="w-full bg-gray-50 border border-gray-200 rounded px-2 py-1 text-xs" />
+          </div>
+        ))}
+      </div>
+
+      <div className="flex gap-2">
+        <button onClick={addSubtitle}
+          className="flex-1 text-xs border border-dashed border-gray-300 rounded-md py-1.5 text-gray-500 hover:border-gray-400 transition-colors">
+          + Altyazı Ekle
+        </button>
+        {subtitles.length > 0 && (
+          <button onClick={handleSrtExport}
+            className="text-xs bg-gray-100 text-gray-700 rounded-md py-1.5 px-3 hover:bg-gray-200 transition-colors">
+            ⬇ SRT İndir
+          </button>
+        )}
+      </div>
+
+      {/* Görünüm */}
+      <div className="border-t border-gray-100 pt-3 space-y-3">
+        <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Görünüm</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1 font-medium">Font</label>
+            <select className="w-full bg-gray-50 border border-gray-200 rounded-md px-2 py-1.5 text-xs"
+              value={String(values.subtitleFontFamily ?? 'Poppins')}
+              onChange={e => update('subtitleFontFamily', e.target.value)}>
+              {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1 font-medium">Font Boyutu</label>
+            <input type="number" min={24} max={120}
+              value={Number(values.subtitleFontSize ?? 52)}
+              onChange={e => update('subtitleFontSize', Number(e.target.value))}
+              className="w-full bg-gray-50 border border-gray-200 rounded-md px-2 py-1.5 text-xs" />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs text-gray-500 mb-1 font-medium">Metin Rengi</label>
+          <ColorPicker
+            value={String(values.subtitleColor ?? '#ffffff')}
+            opacity={100}
+            onChange={({ color }) => update('subtitleColor', color)} />
+        </div>
+
+        <div>
+          <label className="block text-xs text-gray-500 mb-1 font-medium">Arka Plan Rengi</label>
+          <ColorPicker
+            value={String(values.subtitleBgColor ?? 'rgba(0,0,0,0.65)')}
+            opacity={100}
+            onChange={({ color }) => update('subtitleBgColor', color)} />
+        </div>
+
+        <div>
+          <label className="block text-xs text-gray-500 mb-1 font-medium">Konum</label>
+          <div className="flex gap-3">
+            {(['bottom', 'middle', 'top'] as const).map(pos => (
+              <label key={pos} className="flex items-center gap-1 text-xs cursor-pointer">
+                <input type="radio" name="subtitlePosition" value={pos}
+                  checked={(values.subtitlePosition ?? 'bottom') === pos}
+                  onChange={() => update('subtitlePosition', pos)} />
+                {pos === 'bottom' ? 'Alt' : pos === 'middle' ? 'Orta' : 'Üst'}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex gap-4">
+          <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+            <input type="checkbox"
+              checked={Boolean(values.subtitleBold ?? true)}
+              onChange={e => update('subtitleBold', e.target.checked)} />
+            Kalın
+          </label>
+          <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+            <input type="checkbox"
+              checked={Boolean(values.subtitleOutline)}
+              onChange={e => update('subtitleOutline', e.target.checked)} />
+            Outline
+          </label>
+          {Boolean(values.subtitleOutline) && (
+            <ColorPicker
+              value={String(values.subtitleOutlineColor ?? '#000000')}
+              opacity={100}
+              onChange={({ color }) => update('subtitleOutlineColor', color)} />
+          )}
+        </div>
+      </div>
+
+      {/* Lower Third */}
+      <AccordionSection
+        title="Lower Third"
+        enabled={Boolean(values.showLowerThird)}
+        onToggle={v => update('showLowerThird', v)}
+      >
+        <div className="space-y-2">
+          <input type="text"
+            value={String(values.lowerThirdText ?? '')}
+            onChange={e => update('lowerThirdText', e.target.value)}
+            placeholder="Ad Soyad — Ünvan"
+            className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" />
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Renk</label>
+            <ColorPicker
+              value={String(values.lowerThirdColor ?? '#10b981')}
+              opacity={100}
+              onChange={({ color }) => update('lowerThirdColor', color)} />
+          </div>
+        </div>
+      </AccordionSection>
+    </div>
+  )
 }
 
 function CommonFields({ values, update }: { values: Record<string, unknown>; update: (k: string, v: unknown) => void }) {
