@@ -781,13 +781,13 @@ function CommonFields({ values, update, templateId }: { values: Record<string, u
 interface ParamFormProps {
   templateId: string
   values: Record<string, unknown>
-  onChange: (values: Record<string, unknown>) => void
+  onChange: (values: Record<string, unknown> | ((prev: Record<string, unknown>) => Record<string, unknown>)) => void
   onSubmit: () => void
   loading: boolean
 }
 
 export function ParamForm({ templateId, values, onChange, onSubmit, loading }: ParamFormProps) {
-  const update = (key: string, value: unknown) => onChange({ ...values, [key]: value })
+  const update = (key: string, value: unknown) => onChange(prev => ({ ...prev, [key]: value }))
 
   return (
     <div className="space-y-3">
