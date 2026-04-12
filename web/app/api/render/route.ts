@@ -46,10 +46,20 @@ export async function POST(req: NextRequest) {
       durationSeconds?: number
     }
 
-    const { templateId, overrides, platform, durationSeconds } = body
+    let { templateId, overrides, platform, durationSeconds } = body
 
     if (!templateId) {
       return NextResponse.json({ error: 'templateId gerekli' }, { status: 400 })
+    }
+
+    // Subtitle: süreyi önce overrides.durationSeconds'dan, yoksa subtitles son endMs'den al
+    if (templateId === 'Subtitle' && !durationSeconds) {
+      if (overrides?.durationSeconds) {
+        durationSeconds = Number(overrides.durationSeconds)
+      } else if (Array.isArray(overrides?.subtitles) && overrides.subtitles.length > 0) {
+        const lastEnd = Math.max(...(overrides.subtitles as { endMs: number }[]).map(s => s.endMs))
+        durationSeconds = Math.ceil(lastEnd / 1000) + 1
+      }
     }
 
     const resolvedOverrides = {
