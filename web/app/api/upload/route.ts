@@ -1,7 +1,10 @@
 export const runtime = 'nodejs'
+export const maxDuration = 120 // 2 dakika upload timeout
 
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
+import { mkdir, createWriteStream } from 'fs'
+import { pipeline } from 'stream/promises'
+import { Readable } from 'stream'
 import { execFile } from 'child_process'
 import { promisify } from 'util'
 import path from 'path'
@@ -27,11 +30,14 @@ export async function POST(req: NextRequest) {
     }
 
     const filename = `${randomUUID()}${ext}`
-    const bytes = await file.arrayBuffer()
-    await mkdir(UPLOAD_DIR, { recursive: true })
-    await writeFile(path.join(UPLOAD_DIR, filename), Buffer.from(bytes))
+    await new Promise<void>((resolve, reject) => mkdir(UPLOAD_DIR, { recursive: true }, e => e ? reject(e) : resolve()))
+    const filePath2 = path.join(UPLOAD_DIR, filename)
+    await pipeline(
+      Readable.fromWeb(file.stream() as any),
+      createWriteStream(filePath2)
+    )
 
-    const filePath = path.join(UPLOAD_DIR, filename)
+    const filePath = filePath2
     let durationSeconds: number | null = null
 
     if (['.mp4', '.webm', '.mov'].includes(ext)) {
