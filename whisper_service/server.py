@@ -13,17 +13,11 @@ _models: dict = {}
 
 
 def get_model(language: str) -> WhisperModel:
-    """TR için fine-tuned model, diğerleri için large-v3."""
-    model_key = "tr" if language == "tr" else "en"
-    if model_key not in _models:
-        if language == "tr":
-            # Türkçe fine-tuned model (HuggingFace'den ilk çalıştırmada indirilir)
-            model_id = "selimc/whisper-large-v3-turbo-turkish"
-        else:
-            model_id = "large-v3"
+    """TR ve EN için large-v3 (çok dilli, Türkçe'de yüksek doğruluk)."""
+    if "default" not in _models:
         # CPU kullanımı; GPU varsa device="cuda" yap
-        _models[model_key] = WhisperModel(model_id, device="cpu", compute_type="int8")
-    return _models[model_key]
+        _models["default"] = WhisperModel("large-v3", device="cpu", compute_type="int8")
+    return _models["default"]
 
 
 class TranscribeRequest(BaseModel):
