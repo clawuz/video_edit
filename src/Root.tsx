@@ -103,7 +103,8 @@ export const RemotionRoot: React.FC = () => {
         defaultProps={productAdDefaults}
         calculateMetadata={({ props }) => {
           const p = PLATFORMS[(props as any).platform ?? '9:16'] ?? PLATFORMS['9:16']
-          return { width: p.w, height: p.h, props }
+          const durationInFrames = (props as any).durationInFrames ?? 900
+          return { width: p.w, height: p.h, durationInFrames, props }
         }}
       />
       <Composition
@@ -116,7 +117,8 @@ export const RemotionRoot: React.FC = () => {
         defaultProps={statsDefaults}
         calculateMetadata={({ props }) => {
           const p = PLATFORMS[(props as any).platform ?? '9:16'] ?? PLATFORMS['9:16']
-          return { width: p.w, height: p.h, props }
+          const durationInFrames = (props as any).durationInFrames ?? 600
+          return { width: p.w, height: p.h, durationInFrames, props }
         }}
       />
       <Composition
@@ -129,7 +131,8 @@ export const RemotionRoot: React.FC = () => {
         defaultProps={subtitleDefaults}
         calculateMetadata={({ props }) => {
           const p = PLATFORMS[(props as any).platform ?? '9:16'] ?? PLATFORMS['9:16']
-          return { width: p.w, height: p.h, props }
+          const durationInFrames = (props as any).durationInFrames ?? 900
+          return { width: p.w, height: p.h, durationInFrames, props }
         }}
       />
     </>
