@@ -426,8 +426,48 @@ function SubtitleForm({ values, update }: { values: Record<string, unknown>; upd
 
   return (
     <div className="space-y-3">
+      {/* Video Yükle */}
+      <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3 space-y-2">
+        <p className="text-xs font-semibold text-indigo-700 uppercase tracking-wide">1. Videoyu Yükle</p>
+        {values.backgroundMedia ? (
+          <div className="flex items-center gap-2 bg-white border border-indigo-200 rounded-lg px-3 py-2">
+            <span className="text-xs text-gray-600 flex-1 truncate">✓ {String(values.backgroundMedia).split('/').pop()}</span>
+            <label className="text-xs text-indigo-500 hover:text-indigo-700 cursor-pointer font-medium">
+              Değiştir
+              <input type="file" accept="video/mp4,video/webm,image/*" className="hidden"
+                onChange={async e => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                  const fd = new FormData()
+                  fd.append('file', file)
+                  const res = await fetch('/api/upload', { method: 'POST', body: fd })
+                  const data = await res.json()
+                  if (data.remotionUrl) update('backgroundMedia', data.remotionUrl)
+                }} />
+            </label>
+            <button onClick={() => update('backgroundMedia', '')} className="text-xs text-gray-400 hover:text-red-500">✕</button>
+          </div>
+        ) : (
+          <label className="block w-full border-2 border-dashed border-indigo-300 rounded-lg py-5 text-center cursor-pointer hover:border-indigo-500 transition-colors bg-white">
+            <div className="text-2xl mb-1">🎬</div>
+            <div className="text-xs text-gray-500"><span className="text-indigo-600 font-semibold">Video seç</span> (MP4, WebM) veya görsel</div>
+            <input type="file" accept="video/mp4,video/webm,image/*" className="hidden"
+              onChange={async e => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                const fd = new FormData()
+                fd.append('file', file)
+                const res = await fetch('/api/upload', { method: 'POST', body: fd })
+                const data = await res.json()
+                if (data.remotionUrl) update('backgroundMedia', data.remotionUrl)
+              }} />
+          </label>
+        )}
+      </div>
+
       {/* Whisper + SRT */}
       <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">2. Altyazı Oluştur</p>
         <div className="flex gap-2 items-center">
           <label className="text-xs text-gray-500 font-medium">Dil:</label>
           <label className="flex items-center gap-1 text-xs cursor-pointer">
@@ -627,7 +667,7 @@ function SubtitleForm({ values, update }: { values: Record<string, unknown>; upd
   )
 }
 
-function CommonFields({ values, update }: { values: Record<string, unknown>; update: (k: string, v: unknown) => void }) {
+function CommonFields({ values, update, templateId }: { values: Record<string, unknown>; update: (k: string, v: unknown) => void; templateId?: string }) {
   return (
     <div className="space-y-3 pt-1">
       <div>
@@ -646,34 +686,36 @@ function CommonFields({ values, update }: { values: Record<string, unknown>; upd
           onChange={({ color }) => update('backgroundColor', color)}
         />
       </div>
-      <div>
-        <label className="block text-xs text-gray-500 mb-1 font-medium">Arka Plan Görseli / Videosu</label>
-        <div className="flex items-center gap-2">
-          <label className="cursor-pointer bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5 text-xs text-gray-600 hover:border-gray-400 transition-colors">
-            📁 Dosya Seç
-            <input
-              type="file"
-              accept="image/*,video/mp4,video/webm"
-              className="hidden"
-              onChange={async e => {
-                const file = e.target.files?.[0]
-                if (!file) return
-                const fd = new FormData()
-                fd.append('file', file)
-                const res = await fetch('/api/upload', { method: 'POST', body: fd })
-                const data = await res.json()
-                if (data.remotionUrl) update('backgroundMedia', data.remotionUrl)
-              }}
-            />
-          </label>
-          {values.backgroundMedia != null && values.backgroundMedia !== '' && (
-            <>
-              <span className="text-xs text-gray-400 truncate max-w-[120px]">{String(values.backgroundMedia).split('/').pop()}</span>
-              <button onClick={() => update('backgroundMedia', '')} className="text-xs text-gray-400 hover:text-red-500">✕</button>
-            </>
-          )}
+      {templateId !== 'Subtitle' && (
+        <div>
+          <label className="block text-xs text-gray-500 mb-1 font-medium">Arka Plan Görseli / Videosu</label>
+          <div className="flex items-center gap-2">
+            <label className="cursor-pointer bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5 text-xs text-gray-600 hover:border-gray-400 transition-colors">
+              📁 Dosya Seç
+              <input
+                type="file"
+                accept="image/*,video/mp4,video/webm"
+                className="hidden"
+                onChange={async e => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                  const fd = new FormData()
+                  fd.append('file', file)
+                  const res = await fetch('/api/upload', { method: 'POST', body: fd })
+                  const data = await res.json()
+                  if (data.remotionUrl) update('backgroundMedia', data.remotionUrl)
+                }}
+              />
+            </label>
+            {values.backgroundMedia != null && values.backgroundMedia !== '' && (
+              <>
+                <span className="text-xs text-gray-400 truncate max-w-[120px]">{String(values.backgroundMedia).split('/').pop()}</span>
+                <button onClick={() => update('backgroundMedia', '')} className="text-xs text-gray-400 hover:text-red-500">✕</button>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs text-gray-500 mb-1 font-medium">Font</label>
@@ -727,7 +769,7 @@ export function ParamForm({ templateId, values, onChange, onSubmit, loading }: P
       {templateId === 'Stats' && <StatsForm values={values} update={update} />}
       {templateId === 'Subtitle' && <SubtitleForm values={values} update={update} />}
 
-      <CommonFields values={values} update={update} />
+      <CommonFields values={values} update={update} templateId={templateId} />
 
       <button
         onClick={onSubmit}
