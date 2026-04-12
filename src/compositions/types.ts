@@ -30,3 +30,17 @@ export interface BodyItem {
   entryAnim: EntryAnimType
   exitAnim: ExitAnimType
 }
+
+export interface SubtitleEntry {
+  startMs: number
+  endMs: number
+  text: string
+}
+
+export interface WordSegment {
+  word: string
+  startMs: number
+  endMs: number
+}
+
+export type SubtitleSplitMode = 'sentence' | 'word' | 'chunk'
