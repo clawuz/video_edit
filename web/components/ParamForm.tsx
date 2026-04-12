@@ -735,12 +735,14 @@ function CommonFields({ values, update, templateId }: { values: Record<string, u
             {PLATFORM_KEYS.map(k => <option key={k} value={k}>{PLATFORMS[k].label}</option>)}
           </select>
         </div>
-        <div>
-          <label className="block text-xs text-gray-500 mb-1 font-medium">Süre</label>
-          <select className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" value={String(values.durationSeconds ?? 30)} onChange={e => update('durationSeconds', Number(e.target.value))}>
-            {DURATIONS.map(d => <option key={d} value={d}>{d} saniye</option>)}
-          </select>
-        </div>
+        {templateId !== 'Subtitle' && (
+          <div>
+            <label className="block text-xs text-gray-500 mb-1 font-medium">Süre</label>
+            <select className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" value={String(values.durationSeconds ?? 30)} onChange={e => update('durationSeconds', Number(e.target.value))}>
+              {DURATIONS.map(d => <option key={d} value={d}>{d} saniye</option>)}
+            </select>
+          </div>
+        )}
         {templateId !== 'Subtitle' && (
           <>
             <div>
