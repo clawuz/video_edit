@@ -53,6 +53,7 @@ export default function Home() {
     setError(null)
     setRenderId(null)
     try {
+      console.log('[page] render params.durationSeconds:', params.durationSeconds)
       const res = await fetch('/api/render', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

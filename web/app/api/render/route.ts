@@ -52,6 +52,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'templateId gerekli' }, { status: 400 })
     }
 
+    console.log('[render] templateId:', templateId, '| durationSeconds (from body):', durationSeconds, '| overrides.durationSeconds:', overrides?.durationSeconds)
+
     // Subtitle: süreyi önce overrides.durationSeconds'dan, yoksa subtitles son endMs'den al
     if (templateId === 'Subtitle' && !durationSeconds) {
       if (overrides?.durationSeconds) {

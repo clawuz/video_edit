@@ -25,9 +25,13 @@ export function buildRenderCommand(opts: {
   propsFile: string
   width?: number
   height?: number
+  durationInFrames?: number
 }): string {
+  const remotionDir = getRemotionDir()
+  const publicDir = path.join(remotionDir, 'public')
   const sizeFlags = opts.width && opts.height ? ` --width=${opts.width} --height=${opts.height}` : ''
-  return `npx remotion render ${opts.compositionId} "${opts.outputPath}" --props="${opts.propsFile}"${sizeFlags} --concurrency=1`
+  const durationFlag = opts.durationInFrames ? ` --frames=0-${opts.durationInFrames - 1}` : ''
+  return `npx remotion render ${opts.compositionId} "${opts.outputPath}" --props="${opts.propsFile}" --public-dir="${publicDir}"${sizeFlags}${durationFlag} --concurrency=1`
 }
 
 export async function render(opts: {
@@ -49,6 +53,7 @@ export async function render(opts: {
       propsFile,
       width: opts.props.width as number | undefined,
       height: opts.props.height as number | undefined,
+      durationInFrames: opts.props.durationInFrames as number | undefined,
     })
     await execAsync(cmd, {
       cwd: getRemotionDir(),
