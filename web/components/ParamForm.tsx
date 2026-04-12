@@ -670,22 +670,26 @@ function SubtitleForm({ values, update }: { values: Record<string, unknown>; upd
 function CommonFields({ values, update, templateId }: { values: Record<string, unknown>; update: (k: string, v: unknown) => void; templateId?: string }) {
   return (
     <div className="space-y-3 pt-1">
-      <div>
-        <label className="block text-xs text-gray-500 mb-2 font-medium">Vurgu Rengi</label>
-        <ColorPicker
-          value={String(values.accentColor ?? '#e67e22')}
-          opacity={Number(values.accentOpacity ?? 100)}
-          onChange={({ color, opacity }) => { update('accentColor', color); update('accentOpacity', opacity) }}
-        />
-      </div>
-      <div>
-        <label className="block text-xs text-gray-500 mb-2 font-medium">Arka Plan Rengi</label>
-        <ColorPicker
-          value={String(values.backgroundColor ?? '#1a1a2e')}
-          opacity={100}
-          onChange={({ color }) => update('backgroundColor', color)}
-        />
-      </div>
+      {templateId !== 'Subtitle' && (
+        <>
+          <div>
+            <label className="block text-xs text-gray-500 mb-2 font-medium">Vurgu Rengi</label>
+            <ColorPicker
+              value={String(values.accentColor ?? '#e67e22')}
+              opacity={Number(values.accentOpacity ?? 100)}
+              onChange={({ color, opacity }) => { update('accentColor', color); update('accentOpacity', opacity) }}
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-2 font-medium">Arka Plan Rengi</label>
+            <ColorPicker
+              value={String(values.backgroundColor ?? '#1a1a2e')}
+              opacity={100}
+              onChange={({ color }) => update('backgroundColor', color)}
+            />
+          </div>
+        </>
+      )}
       {templateId !== 'Subtitle' && (
         <div>
           <label className="block text-xs text-gray-500 mb-1 font-medium">Arka Plan Görseli / Videosu</label>
@@ -717,12 +721,14 @@ function CommonFields({ values, update, templateId }: { values: Record<string, u
         </div>
       )}
       <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs text-gray-500 mb-1 font-medium">Font</label>
-          <select className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" value={String(values.fontFamily ?? 'sans-serif')} onChange={e => update('fontFamily', e.target.value)}>
-            {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
-          </select>
-        </div>
+        {templateId !== 'Subtitle' && (
+          <div>
+            <label className="block text-xs text-gray-500 mb-1 font-medium">Font</label>
+            <select className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" value={String(values.fontFamily ?? 'sans-serif')} onChange={e => update('fontFamily', e.target.value)}>
+              {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
+            </select>
+          </div>
+        )}
         <div>
           <label className="block text-xs text-gray-500 mb-1 font-medium">Platform</label>
           <select className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" value={String(values.platform ?? '9:16')} onChange={e => update('platform', e.target.value)}>
@@ -735,18 +741,22 @@ function CommonFields({ values, update, templateId }: { values: Record<string, u
             {DURATIONS.map(d => <option key={d} value={d}>{d} saniye</option>)}
           </select>
         </div>
-        <div>
-          <label className="block text-xs text-gray-500 mb-1 font-medium">Başlık Boyutu</label>
-          <select className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" value={String(values.titleFontSize ?? 72)} onChange={e => update('titleFontSize', Number(e.target.value))}>
-            {[36, 48, 60, 72, 96, 120].map(s => <option key={s} value={s}>{s}px</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs text-gray-500 mb-1 font-medium">Metin Boyutu</label>
-          <select className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" value={String(values.bodyFontSize ?? 36)} onChange={e => update('bodyFontSize', Number(e.target.value))}>
-            {[18, 24, 32, 36, 48].map(s => <option key={s} value={s}>{s}px</option>)}
-          </select>
-        </div>
+        {templateId !== 'Subtitle' && (
+          <>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1 font-medium">Başlık Boyutu</label>
+              <select className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" value={String(values.titleFontSize ?? 72)} onChange={e => update('titleFontSize', Number(e.target.value))}>
+                {[36, 48, 60, 72, 96, 120].map(s => <option key={s} value={s}>{s}px</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1 font-medium">Metin Boyutu</label>
+              <select className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" value={String(values.bodyFontSize ?? 36)} onChange={e => update('bodyFontSize', Number(e.target.value))}>
+                {[18, 24, 32, 36, 48].map(s => <option key={s} value={s}>{s}px</option>)}
+              </select>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
