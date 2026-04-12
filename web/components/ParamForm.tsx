@@ -348,6 +348,7 @@ function SubtitleForm({ values, update }: { values: Record<string, unknown>; upd
     ? (values.subtitles as SubtitleEntry[])
     : []
 
+  const [uploading, setUploading] = useState(false)
   const [whisperStatus, setWhisperStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
   const [whisperMessage, setWhisperMessage] = useState('')
 
@@ -416,21 +417,26 @@ function SubtitleForm({ values, update }: { values: Record<string, unknown>; upd
   }
 
   async function uploadVideoAndDetectDuration(file: File) {
-    const fd = new FormData()
-    fd.append('file', file)
-    const res = await fetch('/api/upload', { method: 'POST', body: fd })
-    const data = await res.json()
-    if (!data.remotionUrl) return
-    update('backgroundMedia', data.remotionUrl)
-    if (file.type.startsWith('video/')) {
-      const url = URL.createObjectURL(file)
-      const video = document.createElement('video')
-      video.preload = 'metadata'
-      video.onloadedmetadata = () => {
-        update('durationSeconds', Math.ceil(video.duration))
-        URL.revokeObjectURL(url)
+    setUploading(true)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/upload', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!data.remotionUrl) return
+      update('backgroundMedia', data.remotionUrl)
+      if (file.type.startsWith('video/')) {
+        const objectUrl = URL.createObjectURL(file)
+        const video = document.createElement('video')
+        video.preload = 'metadata'
+        video.onloadedmetadata = () => {
+          update('durationSeconds', Math.ceil(video.duration))
+          URL.revokeObjectURL(objectUrl)
+        }
+        video.src = objectUrl
       }
-      video.src = url
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -448,7 +454,12 @@ function SubtitleForm({ values, update }: { values: Record<string, unknown>; upd
       {/* Video Yükle */}
       <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3 space-y-2">
         <p className="text-xs font-semibold text-indigo-700 uppercase tracking-wide">1. Videoyu Yükle</p>
-        {values.backgroundMedia ? (
+        {uploading ? (
+          <div className="flex items-center gap-2 bg-white border border-indigo-200 rounded-lg px-3 py-3 text-xs text-indigo-500">
+            <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+            Yükleniyor...
+          </div>
+        ) : values.backgroundMedia ? (
           <div className="flex items-center gap-2 bg-white border border-indigo-200 rounded-lg px-3 py-2">
             <span className="text-xs text-gray-600 flex-1 truncate">✓ {String(values.backgroundMedia).split('/').pop()}</span>
             <label className="text-xs text-indigo-500 hover:text-indigo-700 cursor-pointer font-medium">
