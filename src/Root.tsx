@@ -1,11 +1,13 @@
-import React from "react";
-import { Composition } from "remotion";
-import { HelloWorld } from "./compositions/HelloWorld";
-import { ProductAd, ProductAdProps } from "./compositions/ProductAd";
-import { Stats, StatsProps } from "./compositions/Stats";
-import { TalkingHead, TalkingHeadProps } from "./compositions/TalkingHead";
+import React from 'react'
+import { Composition } from 'remotion'
+import { HelloWorld } from './compositions/HelloWorld'
+import { ProductAd, ProductAdProps } from './compositions/ProductAd'
+import { Stats, StatsProps } from './compositions/Stats'
+import { Subtitle, SubtitleProps } from './compositions/Subtitle'
+import { PLATFORMS } from './compositions/platforms'
 
-const productAdDefaults: ProductAdProps = {
+const productAdDefaults = {
+  platform: '9:16',
   title: 'Your morning deserves better',
   showTitle: true,
   titleStartSec: 0,
@@ -36,9 +38,10 @@ const productAdDefaults: ProductAdProps = {
   backgroundMedia: '',
   titleFontSize: 72,
   bodyFontSize: 36,
-};
+} as unknown as ProductAdProps
 
-const statsDefaults: StatsProps = {
+const statsDefaults = {
+  platform: '9:16',
   stats: [
     { value: '47%', label: 'Increase in Engagement' },
     { value: '2.3x', label: 'Return on Investment' },
@@ -52,23 +55,32 @@ const statsDefaults: StatsProps = {
   backgroundMedia: '',
   bodyFontSize: 36,
   animationType: 'fade' as const,
-};
+} as unknown as StatsProps
 
-const talkingHeadDefaults: TalkingHeadProps = {
+const subtitleDefaults: SubtitleProps = {
+  platform: '9:16',
+  backgroundMedia: '',
   subtitles: [
-    { startMs: 0, endMs: 3000, text: 'Welcome to this video.' },
-    { startMs: 3000, endMs: 6000, text: 'Here is some great content.' },
+    { startMs: 0, endMs: 3000, text: 'Merhaba!' },
+    { startMs: 3000, endMs: 6000, text: 'Bu bir örnek altyazı.' },
   ],
-  lowerThird: 'Your Name — Title',
+  splitMode: 'sentence',
+  chunkSize: 5,
+  subtitlePosition: 'bottom',
+  subtitleFontSize: 52,
+  subtitleFontFamily: 'Poppins',
+  subtitleColor: '#ffffff',
+  subtitleBgColor: 'rgba(0,0,0,0.65)',
+  subtitleBold: true,
+  subtitleOutline: false,
+  subtitleOutlineColor: '#000000',
+  showLowerThird: false,
+  lowerThirdText: '',
+  lowerThirdColor: '#10b981',
   logoUrl: '',
   accentColor: '#10b981',
-  backgroundColor: '#1a1a2e',
-  fontFamily: 'sans-serif',
-  backgroundMedia: '',
-  titleFontSize: 24,
-  bodyFontSize: 32,
-  animationType: 'fade' as const,
-};
+  backgroundColor: '#000000',
+}
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -89,7 +101,10 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
         defaultProps={productAdDefaults}
-        calculateMetadata={({ props }) => ({ props })}
+        calculateMetadata={({ props }) => {
+          const p = PLATFORMS[(props as any).platform ?? '9:16'] ?? PLATFORMS['9:16']
+          return { width: p.w, height: p.h, props }
+        }}
       />
       <Composition
         id="Stats"
@@ -99,18 +114,24 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
         defaultProps={statsDefaults}
-        calculateMetadata={({ props }) => ({ props })}
+        calculateMetadata={({ props }) => {
+          const p = PLATFORMS[(props as any).platform ?? '9:16'] ?? PLATFORMS['9:16']
+          return { width: p.w, height: p.h, props }
+        }}
       />
       <Composition
-        id="TalkingHead"
-        component={TalkingHead}
-        durationInFrames={300}
+        id="Subtitle"
+        component={Subtitle}
+        durationInFrames={900}
         fps={30}
         width={1080}
         height={1920}
-        defaultProps={talkingHeadDefaults}
-        calculateMetadata={({ props }) => ({ props })}
+        defaultProps={subtitleDefaults}
+        calculateMetadata={({ props }) => {
+          const p = PLATFORMS[(props as any).platform ?? '9:16'] ?? PLATFORMS['9:16']
+          return { width: p.w, height: p.h, props }
+        }}
       />
     </>
-  );
-};
+  )
+}
