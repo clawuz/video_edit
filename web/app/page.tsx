@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { TopNav, TabId } from '@/components/TopNav'
 import { TemplateGrid } from '@/components/TemplateGrid'
 import { ParamForm } from '@/components/ParamForm'
@@ -21,6 +21,25 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [renderId, setRenderId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [renderProgress, setRenderProgress] = useState(0)
+  const renderTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    if (!loading) {
+      if (renderTimerRef.current) clearInterval(renderTimerRef.current)
+      return
+    }
+    setRenderProgress(0)
+    const durationSec = Number((params as any).durationSeconds ?? 30)
+    // Remotion CPU render tahmini: ~3x realtime
+    const estimatedMs = durationSec * 3000
+    const startTime = Date.now()
+    renderTimerRef.current = setInterval(() => {
+      const elapsed = Date.now() - startTime
+      setRenderProgress(Math.round(Math.min((elapsed / estimatedMs) * 95, 95)))
+    }, 500)
+    return () => { if (renderTimerRef.current) clearInterval(renderTimerRef.current) }
+  }, [loading])
 
   const handleTemplateSelect = (id: string) => {
     setSelectedTemplate(id)
@@ -46,6 +65,7 @@ export default function Home() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Render hatası')
+      setRenderProgress(100)
       setRenderId(data.id)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Bilinmeyen hata')
@@ -71,6 +91,20 @@ export default function Home() {
               onSubmit={handleRender}
               loading={loading}
             />
+            {loading && (
+              <div className="mt-3 space-y-1">
+                <div className="flex justify-between text-xs text-gray-400">
+                  <span>Render ediliyor...</span>
+                  <span>%{renderProgress}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div
+                    className="bg-gray-800 h-1.5 rounded-full transition-all duration-500"
+                    style={{ width: `${renderProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
             {error && (
               <div className="mt-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
                 {error}
