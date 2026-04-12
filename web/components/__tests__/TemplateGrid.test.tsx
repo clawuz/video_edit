@@ -7,7 +7,7 @@ describe('TemplateGrid', () => {
     render(<TemplateGrid selected="ProductAd" onSelect={() => {}} />)
     expect(screen.getByText('Ürün Reklamı')).toBeInTheDocument()
     expect(screen.getByText('İstatistik')).toBeInTheDocument()
-    expect(screen.getByText('Talking Head')).toBeInTheDocument()
+    expect(screen.getByText('Altyazı')).toBeInTheDocument()
   })
 
   test('seçili kart kalın border alır', () => {
@@ -19,7 +19,7 @@ describe('TemplateGrid', () => {
   test('kart tıklandığında onSelect çağrılır', async () => {
     const onSelect = jest.fn()
     render(<TemplateGrid selected="ProductAd" onSelect={onSelect} />)
-    await userEvent.click(screen.getByText('Talking Head'))
-    expect(onSelect).toHaveBeenCalledWith('TalkingHead')
+    await userEvent.click(screen.getByText('Altyazı'))
+    expect(onSelect).toHaveBeenCalledWith('Subtitle')
   })
 })

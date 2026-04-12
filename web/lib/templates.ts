@@ -1,18 +1,20 @@
+import { PLATFORMS, PLATFORM_KEYS, PlatformKey } from '../../src/compositions/platforms'
+
 export interface TemplateRenderMeta {
-  width: number;
-  height: number;
-  durationInFrames: number;
-  fps: number;
+  width: number
+  height: number
+  durationInFrames: number
+  fps: number
 }
 
 export interface Template {
-  id: string;
-  label: string;
-  description: string;
-  gradient: string;
-  defaultDurationSeconds: number;
-  defaultFormat: '1080x1920' | '1920x1080';
-  defaultProps: Record<string, unknown>;
+  id: string
+  label: string
+  description: string
+  gradient: string
+  defaultDurationSeconds: number
+  defaultPlatform: PlatformKey
+  defaultProps: Record<string, unknown>
 }
 
 export const TEMPLATES: Template[] = [
@@ -22,8 +24,9 @@ export const TEMPLATES: Template[] = [
     description: 'Animasyonlu başlık, özellikler ve CTA',
     gradient: 'from-indigo-600 to-purple-600',
     defaultDurationSeconds: 30,
-    defaultFormat: '1080x1920',
+    defaultPlatform: '9:16',
     defaultProps: {
+      platform: '9:16',
       title: 'Your morning deserves better',
       showTitle: true,
       titleStartSec: 0,
@@ -62,8 +65,9 @@ export const TEMPLATES: Template[] = [
     description: 'Count-up animasyonlu sayısal veriler',
     gradient: 'from-blue-500 to-cyan-500',
     defaultDurationSeconds: 20,
-    defaultFormat: '1080x1920',
+    defaultPlatform: '9:16',
     defaultProps: {
+      platform: '9:16',
       stats: [
         { value: '47%', label: 'Dönüşüm artışı' },
         { value: '2.3x', label: 'Reklam getirisi' },
@@ -80,26 +84,35 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
-    id: 'TalkingHead',
-    label: 'Talking Head',
-    description: 'Altyazılı sunum şablonu',
+    id: 'Subtitle',
+    label: 'Altyazı',
+    description: 'Whisper altyazı, SRT import/export, platform safe area',
     gradient: 'from-emerald-500 to-teal-500',
     defaultDurationSeconds: 30,
-    defaultFormat: '1080x1920',
+    defaultPlatform: '9:16',
     defaultProps: {
+      platform: '9:16',
+      backgroundMedia: '',
       subtitles: [
         { startMs: 0, endMs: 3000, text: 'Merhaba!' },
-        { startMs: 3000, endMs: 6000, text: 'Bu bir örnek.' },
+        { startMs: 3000, endMs: 6000, text: 'Bu bir örnek altyazı.' },
       ],
-      lowerThird: 'Ad Soyad — Ünvan',
+      splitMode: 'sentence',
+      chunkSize: 5,
+      subtitlePosition: 'bottom',
+      subtitleFontSize: 52,
+      subtitleFontFamily: 'Poppins',
+      subtitleColor: '#ffffff',
+      subtitleBgColor: 'rgba(0,0,0,0.65)',
+      subtitleBold: true,
+      subtitleOutline: false,
+      subtitleOutlineColor: '#000000',
+      showLowerThird: false,
+      lowerThirdText: '',
+      lowerThirdColor: '#10b981',
       logoUrl: '',
       accentColor: '#10b981',
-      backgroundColor: '#1a1a2e',
-      fontFamily: 'sans-serif',
-      backgroundMedia: '',
-      titleFontSize: 24,
-      bodyFontSize: 32,
-      animationType: 'fade',
+      backgroundColor: '#000000',
     },
   },
 ]
@@ -113,23 +126,21 @@ export function getTemplate(id: string): Template {
 export function buildRenderProps(
   templateId: string,
   overrides: Record<string, unknown>,
-  format?: '1080x1920' | '1920x1080',
+  platform?: PlatformKey,
   durationSeconds?: number
 ): Record<string, unknown> & TemplateRenderMeta {
   const template = getTemplate(templateId)
 
-  const fmt = format ?? template.defaultFormat
-  const parts = fmt.split('x').map(Number)
-  if (parts.length !== 2 || parts.some(isNaN)) {
-    throw new Error(`Invalid format string: ${fmt}`)
-  }
-  const [w, h] = parts
+  const plt = platform ?? (overrides.platform as PlatformKey) ?? template.defaultPlatform
+  const validPlt = (PLATFORM_KEYS as readonly string[]).includes(plt) ? plt as PlatformKey : '9:16' as PlatformKey
+  const { w, h } = PLATFORMS[validPlt]
   const fps = 30
   const dur = durationSeconds ?? template.defaultDurationSeconds
 
   return {
     ...template.defaultProps,
     ...overrides,
+    platform: validPlt,
     width: w,
     height: h,
     fps,

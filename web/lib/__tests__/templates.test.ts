@@ -22,11 +22,45 @@ describe('templates', () => {
     expect(props.body).toBeDefined()
   })
 
-  test('buildRenderProps includes width/height/durationInFrames/fps', () => {
-    const props = buildRenderProps('ProductAd', {}, '1920x1080', 15)
-    expect(props.width).toBe(1920)
-    expect(props.height).toBe(1080)
-    expect(props.durationInFrames).toBe(450) // 15s * 30fps
-    expect(props.fps).toBe(30)
+  test('uses platform dimensions for 9:16', () => {
+    const result = buildRenderProps('ProductAd', {}, '9:16')
+    expect(result.width).toBe(1080)
+    expect(result.height).toBe(1920)
+  })
+
+  test('uses platform dimensions for 1:1', () => {
+    const result = buildRenderProps('ProductAd', {}, '1:1')
+    expect(result.width).toBe(1080)
+    expect(result.height).toBe(1080)
+  })
+
+  test('uses platform dimensions for 16:9', () => {
+    const result = buildRenderProps('ProductAd', {}, '16:9')
+    expect(result.width).toBe(1920)
+    expect(result.height).toBe(1080)
+  })
+
+  test('uses platform dimensions for tiktok', () => {
+    const result = buildRenderProps('ProductAd', {}, 'tiktok')
+    expect(result.width).toBe(1080)
+    expect(result.height).toBe(1920)
+  })
+
+  test('falls back to template defaultPlatform when platform not provided', () => {
+    const result = buildRenderProps('ProductAd', {})
+    expect(result.width).toBe(1080)
+    expect(result.height).toBe(1920)
+  })
+
+  test('buildRenderProps calculates durationInFrames from durationSeconds', () => {
+    const result = buildRenderProps('ProductAd', {}, '9:16', 15)
+    expect(result.durationInFrames).toBe(450) // 15s * 30fps
+    expect(result.fps).toBe(30)
+  })
+
+  test('Subtitle template exists', () => {
+    const t = getTemplate('Subtitle')
+    expect(t.id).toBe('Subtitle')
+    expect(t.defaultPlatform).toBe('9:16')
   })
 })
