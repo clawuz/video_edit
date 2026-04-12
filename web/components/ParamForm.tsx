@@ -415,6 +415,25 @@ function SubtitleForm({ values, update }: { values: Record<string, unknown>; upd
     update('subtitles', updated)
   }
 
+  async function uploadVideoAndDetectDuration(file: File) {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch('/api/upload', { method: 'POST', body: fd })
+    const data = await res.json()
+    if (!data.remotionUrl) return
+    update('backgroundMedia', data.remotionUrl)
+    if (file.type.startsWith('video/')) {
+      const url = URL.createObjectURL(file)
+      const video = document.createElement('video')
+      video.preload = 'metadata'
+      video.onloadedmetadata = () => {
+        update('durationSeconds', Math.ceil(video.duration))
+        URL.revokeObjectURL(url)
+      }
+      video.src = url
+    }
+  }
+
   function addSubtitle() {
     const lastEnd = subtitles.length > 0 ? subtitles[subtitles.length - 1].endMs : 0
     update('subtitles', [...subtitles, { startMs: lastEnd, endMs: lastEnd + 3000, text: '' }])
@@ -435,15 +454,7 @@ function SubtitleForm({ values, update }: { values: Record<string, unknown>; upd
             <label className="text-xs text-indigo-500 hover:text-indigo-700 cursor-pointer font-medium">
               Değiştir
               <input type="file" accept="video/mp4,video/webm,image/*" className="hidden"
-                onChange={async e => {
-                  const file = e.target.files?.[0]
-                  if (!file) return
-                  const fd = new FormData()
-                  fd.append('file', file)
-                  const res = await fetch('/api/upload', { method: 'POST', body: fd })
-                  const data = await res.json()
-                  if (data.remotionUrl) update('backgroundMedia', data.remotionUrl)
-                }} />
+                onChange={e => { const f = e.target.files?.[0]; if (f) uploadVideoAndDetectDuration(f) }} />
             </label>
             <button onClick={() => update('backgroundMedia', '')} className="text-xs text-gray-400 hover:text-red-500">✕</button>
           </div>
@@ -452,15 +463,7 @@ function SubtitleForm({ values, update }: { values: Record<string, unknown>; upd
             <div className="text-2xl mb-1">🎬</div>
             <div className="text-xs text-gray-500"><span className="text-indigo-600 font-semibold">Video seç</span> (MP4, WebM) veya görsel</div>
             <input type="file" accept="video/mp4,video/webm,image/*" className="hidden"
-              onChange={async e => {
-                const file = e.target.files?.[0]
-                if (!file) return
-                const fd = new FormData()
-                fd.append('file', file)
-                const res = await fetch('/api/upload', { method: 'POST', body: fd })
-                const data = await res.json()
-                if (data.remotionUrl) update('backgroundMedia', data.remotionUrl)
-              }} />
+              onChange={e => { const f = e.target.files?.[0]; if (f) uploadVideoAndDetectDuration(f) }} />
           </label>
         )}
       </div>
