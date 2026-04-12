@@ -441,7 +441,10 @@ function SubtitleForm({ values, update }: { values: Record<string, unknown>; upd
       const data = await res.json()
       if (!data.remotionUrl) return
       update('backgroundMedia', data.remotionUrl)
-      if (file.type.startsWith('video/')) {
+      if (data.durationSeconds) {
+        update('durationSeconds', data.durationSeconds)
+      } else if (file.type.startsWith('video/')) {
+        // ffprobe yoksa client-side fallback
         const objectUrl = URL.createObjectURL(file)
         const video = document.createElement('video')
         video.preload = 'metadata'
