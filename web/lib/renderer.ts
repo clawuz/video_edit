@@ -54,11 +54,16 @@ export async function render(opts: {
       height: opts.props.height as number | undefined,
       durationInFrames: opts.props.durationInFrames as number | undefined,
     })
-    await execAsync(cmd, {
+    console.log('[renderer] cmd:', cmd)
+    const { stderr } = await execAsync(cmd, {
       cwd: getRemotionDir(),
       maxBuffer: 1024 * 1024 * 100,
-      timeout: 10 * 60 * 1000,
+      timeout: 20 * 60 * 1000,
     })
+    if (stderr) console.log('[renderer] stderr:', stderr.slice(-500))
+  } catch (err: any) {
+    console.error('[renderer] full error:', err?.stderr?.slice(-1000) ?? err?.message)
+    throw err
   } finally {
     fs.rmSync(propsFile, { force: true })
   }
