@@ -77,6 +77,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ id })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Render hatası'
+    console.error('[render] ERROR:', message)
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
